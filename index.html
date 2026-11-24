@@ -130,7 +130,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div class="row"><div><label>Koʻrinish</label><select id="fin"><option value="clean">Toza (printer uchun)</option><option value="scan">Skaner qilingan</option></select></div>
 <div><label>PDF sifati</label><select id="dpi"><option value="3.125">300 DPI (printer)</option><option value="2.083">200 DPI</option><option value="1.5">Yengil (ekran)</option></select></div></div>
 </div>
-<div class="btns"><button class="b" id="pdf">PDF yuklab olish</button><button class="g" id="sample">Namuna</button><button class="g" id="clear">Tozalash</button><button class="g" id="test">Sinov varagʻi</button></div>
+<div class="btns"><button class="b" id="pdf">Barcha sahifalarni PDF yuklab olish</button><button class="g" id="sample">Namuna</button><button class="g" id="clear">Tozalash</button><button class="g" id="test">Sinov varagʻi</button></div>
 <div id="msg"></div></div>
 <div id="pages"></div></div></div></section>
 
@@ -354,7 +354,8 @@ L=layout(o);const box=$('pages');box.innerHTML='';
 for(let pg=0;pg<L.n;pg++){
 const cv=drawPage(L,pg,1.5),w=document.createElement('div');w.className='pg';w.appendChild(cv);
 const cap=document.createElement('div');cap.className='cap';cap.innerHTML=`<span>${pg+1} / ${L.n}-sahifa</span>`;
-const bt=document.createElement('button');bt.className='g';bt.textContent='PNG saqlash';bt.onclick=()=>savePng(pg);cap.appendChild(bt);w.appendChild(cap);box.appendChild(w);
+const pngBtn=document.createElement('button');pngBtn.className='g';pngBtn.textContent='PNG';pngBtn.title='Sahifani PNG formatida saqlash';pngBtn.onclick=()=>saveImage(pg,'png');cap.appendChild(pngBtn);
+const jpgBtn=document.createElement('button');jpgBtn.className='g';jpgBtn.textContent='JPEG';jpgBtn.title='Sahifani JPEG formatida saqlash';jpgBtn.onclick=()=>saveImage(pg,'jpeg');cap.appendChild(jpgBtn);w.appendChild(cap);box.appendChild(w);
 if(pg%2==1)await new Promise(r=>setTimeout(r,0));if(my!==tok)return}}
 async function hero(){
 const o={font:'Caveat',paper:'ruled',page:'a5',size:24,ls:1.6,jit:.5,margin:50,th:.55,rough:.6,pen:'bp',fin:'clean',ink:INKS[0],ink2:dark(INKS[0]),mix:.4,text:'# Salom!\nBu sahifa kompyuterda yozilgan, lekin xuddi sharikli ruchka bilan qoʻlda yozilgandek koʻrinadi.\n\nE_k = mv^2/2'};
@@ -362,8 +363,12 @@ await loadFont('Caveat');try{await document.fonts.load('24px "Caveat"','Abв')}c
 const Lh=layout(o),c=drawPage(Lh,0,1.5),h=$('hc');h.width=c.width;h.height=c.height;h.getContext('2d').drawImage(c,0,0)}
 const dl={save:async({filename,data})=>{const b=data instanceof Blob?data:new Blob([data]),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}};
 const say=t=>{$('msg').textContent=t};
-async function savePng(pg){if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');
-try{const c=drawPage(L,pg,2.083),b=await new Promise(r=>c.toBlob(r,'image/png'));await dl.save({filename:`qolyozma-${pg+1}.png`,data:b});say('Saqlandi ✓')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'Saqlab boʻlmadi.')}}
+async function saveImage(pg,format){if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');
+try{
+ const c=drawPage(L,pg,2.083),mime=format==='jpeg'?'image/jpeg':'image/png',ext=format==='jpeg'?'jpg':'png';
+ const b=await new Promise((resolve,reject)=>c.toBlob(blob=>blob?resolve(blob):reject(new Error('Rasm yaratilmadi')),mime,format==='jpeg'?.94:undefined));
+ await dl.save({filename:`qolyozma-${pg+1}.${ext}`,data:b});say(format.toUpperCase()+' formatida saqlandi ✓');
+}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'Faylni saqlab boʻlmadi. Qayta urinib koʻring.')}}
 $('pdf').onclick=async()=>{if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');
 if(!window.jspdf)return say('PDF kutubxonasi yuklanmadi — internetni tekshiring.');
 const [W,H]=DIM[L.o.page],sc=+$('dpi').value;try{const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});

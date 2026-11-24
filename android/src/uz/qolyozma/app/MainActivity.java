@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -21,6 +22,8 @@ public class MainActivity extends Activity {
     private volatile ByteArrayOutputStream buf;
     private volatile String fname = "qolyozma.pdf";
     private static final int REQ_SAVE = 7;
+    private static final int REQ_PICK = 8;
+    private ValueCallback<Uri[]> filePathCallback;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -40,7 +43,35 @@ public class MainActivity extends Activity {
         s.setDomStorageEnabled(true);
         s.setAllowFileAccess(true);
         web.addJavascriptInterface(new Bridge(), "QAndroid");
-        web.setWebChromeClient(new WebChromeClient());
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
+                                             FileChooserParams params) {
+                if (filePathCallback != null) filePathCallback.onReceiveValue(null);
+                filePathCallback = callback;
+                try {
+                    Intent pick = params.createIntent();
+                    pick.setAction(Intent.ACTION_OPEN_DOCUMENT);
+                    pick.addCategory(Intent.CATEGORY_OPENABLE);
+                    pick.setType("*/*");
+                    String[] types = params.getAcceptTypes();
+                    if (types != null && types.length > 0) {
+                        java.util.ArrayList<String> valid = new java.util.ArrayList<>();
+                        for (String type : types) {
+                            if (type != null && !type.trim().isEmpty() && !type.equals("*/*")) valid.add(type);
+                        }
+                        if (!valid.isEmpty()) pick.putExtra(Intent.EXTRA_MIME_TYPES, valid.toArray(new String[0]));
+                    }
+                    startActivityForResult(pick, REQ_PICK);
+                    return true;
+                } catch (Exception e) {
+                    filePathCallback = null;
+                    callback.onReceiveValue(null);
+                    Toast.makeText(MainActivity.this, "Fayl tanlash oynasini ochib boʻlmadi", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+        });
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, String url) {
@@ -85,6 +116,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
+        if (req == REQ_PICK) {
+            if (filePathCallback != null) {
+                Uri[] result = (res == RESULT_OK && data != null && data.getData() != null)
+                        ? new Uri[]{data.getData()} : null;
+                filePathCallback.onReceiveValue(result);
+                filePathCallback = null;
+            }
+            return;
+        }
         if (req != REQ_SAVE || buf == null) return;
         if (res == RESULT_OK && data != null && data.getData() != null) {
             try {

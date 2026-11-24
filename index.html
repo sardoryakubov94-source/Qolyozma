@@ -43,6 +43,10 @@ textarea,select{width:100%;background:var(--bg2);color:var(--fg);border:1px soli
 #fileStatus{min-height:18px;margin:5px 0 10px}#fileStatus.error{color:#e46b6b}#fileStatus.ok{color:#36a477}
 
 textarea{min-height:200px;resize:vertical}
+.settings-toggle{width:100%;text-align:left;margin:14px 0 4px;font-weight:600}
+#settingsPanel{overflow:hidden;transition:max-height .25s ease,opacity .2s ease}
+#settingsPanel.is-hidden{max-height:0!important;opacity:0;pointer-events:none;margin:0;padding:0}
+
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 input[type=range]{width:100%;accent-color:var(--acc)}
 .inks{display:flex;gap:9px}.inks button{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);cursor:pointer}.inks .on{outline:2px solid var(--fg);outline-offset:2px}
@@ -80,7 +84,10 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div class="hint" id="fileStatus" role="status">Fayl ichidagi matn avtomatik ajratilib, quyidagi maydonga joylanadi. Mavjud matn almashtiriladi.</div>
 <textarea id="txt"></textarea>
 <div class="hint"># Sarlavha · x^2 yuqori indeks · H_2O quyi indeks · C_{12}, x^{n+1} — koʻp belgili</div>
+<button class="g settings-toggle" id="toggleSettings" type="button" aria-expanded="true" aria-controls="settingsPanel"><span id="settingsToggleIcon">▾</span> Sozlamalarni yashirish</button>
+<div id="settingsPanel">
 <div class="row">
+<div><label>Yozuv realizmi</label><select id="realism"><option value="standard">Standart (hozirgi)</option><option value="pro">Professional — tabiiy qoʻlyozma</option></select></div>
 <div><label>Ruchka turi</label><select id="pen"><option value="bp">Sharikli ruchka</option><option value="gel">Gel ruchka</option><option value="pen">Oddiy qalam</option></select></div>
 <div><label>Yozuv uslubi (<span id="nf">0</span> xil)</label><select id="font"></select></div>
 <div><label>Qogʻoz</label><select id="paper"><option value="ruled">Chiziqli</option><option value="notebook">Daftar</option><option value="grid">Katakli</option><option value="dotted">Nuqtali</option><option value="plain">Oq varaq</option></select></div>
@@ -101,6 +108,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <label>Chap hoshiya: <span id="v6">60</span></label><input type="range" id="margin" min="30" max="120" value="60">
 <div class="row"><div><label>Koʻrinish</label><select id="fin"><option value="clean">Toza (printer uchun)</option><option value="scan">Skaner qilingan</option></select></div>
 <div><label>PDF sifati</label><select id="dpi"><option value="3.125">300 DPI (printer)</option><option value="2.083">200 DPI</option><option value="1.5">Yengil (ekran)</option></select></div></div>
+</div>
 <div class="btns"><button class="b" id="pdf">PDF yuklab olish</button><button class="g" id="sample">Namuna</button><button class="g" id="clear">Tozalash</button><button class="g" id="test">Sinov varagʻi</button></div>
 <div id="msg"></div></div>
 <div id="pages"></div></div></div></section>
@@ -124,6 +132,13 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <footer><div class="w">© 2026 Qoʻlyozma · Hammasi brauzeringizda ishlaydi.</div></footer>
 <script>
 const $=id=>document.getElementById(id);
+const settingsPanel=$('settingsPanel'),settingsButton=$('toggleSettings');
+settingsButton.addEventListener('click',()=>{
+ const hidden=settingsPanel.classList.toggle('is-hidden');
+ settingsButton.setAttribute('aria-expanded',String(!hidden));
+ $('settingsToggleIcon').textContent=hidden?'▸':'▾';
+ settingsButton.lastChild.textContent=hidden?' Sozlamalarni koʻrsatish':' Sozlamalarni yashirish';
+});
 const sourceFile=$('sourceFile'),fileStatus=$('fileStatus');
 $('pickFile').addEventListener('click',()=>sourceFile.click());
 sourceFile.addEventListener('change',async()=>{
@@ -226,7 +241,7 @@ const dk=1-.35*P.p*edge*2;
 const n3=T2[((((y*f/sc)|0)+171)&255)*256+((((x*f/sc)|0)+11)&255)],mm=P.c?0:Math.min(1,mx*(.25+1.5*sst(.25,.8,n3)));d[o]=(c0[0]+(c2[0]-c0[0])*mm)*dk;d[o+1]=(c0[1]+(c2[1]-c0[1])*mm)*dk;d[o+2]=(c0[2]+(c2[2]-c0[2])*mm)*dk;d[o+3]=255*v*dn}
 cx.putImageData(id,0,0)}
 let L=null,tok=0;
-function opts(){return{font:$('font').value,paper:$('paper').value,page:$('page').value,size:+$('size').value,ls:+$('ls').value,jit:+$('jit').value/100,margin:+$('margin').value,th:+$('th').value/100,rough:+$('rough').value/100,pen:$('pen').value,fin:$('fin').value,ink:adj(ink),ink2:adj(ink2),mix:+$('mx').value/100,text:$('txt').value}}
+function opts(){return{font:$('font').value,realism:$('realism').value,paper:$('paper').value,page:$('page').value,size:+$('size').value,ls:+$('ls').value,jit:+$('jit').value/100,margin:+$('margin').value,th:+$('th').value/100,rough:+$('rough').value/100,pen:$('pen').value,fin:$('fin').value,ink:adj(ink),ink2:adj(ink2),mix:+$('mx').value/100,text:$('txt').value}}
 function layout(o){
 const [W,H]=DIM[o.page],lh=Math.round(o.size*o.ls),left=o.margin,right=36,top=56,bottom=44,maxW=W-left-right,fam=`"${o.font}",cursive`,f=p=>`${p}px ${fam}`,mc=document.createElement('canvas').getContext('2d');
 const wW=(w,fs)=>{let s=0;for(const r of w){mc.font=f(fs*(r.m?.62:1));for(const c of r.t)s+=mc.measureText(c).width}return s};
@@ -250,15 +265,20 @@ if(pp==='grid'){x.strokeStyle='#cfe0ea';const g=Math.round(lh/2);for(let a=0;a<W
 if(pp==='dotted'){x.fillStyle='#b5c3cf';for(let a=lh;a<W;a+=lh/1.5)for(let b=top;b<H;b+=lh/1.5)x.fillRect(a,b,1.6,1.6)}
 const ic=document.createElement('canvas');ic.width=cv.width;ic.height=cv.height;
 const y=ic.getContext('2d');y.scale(sc,sc);y.textBaseline='alphabetic';y.lineJoin='round';
-const R=rng(1337+pg*7919),j=o.jit,tw=o.th*P.t*1.6;
+const R=rng(1337+pg*7919),j=o.jit,pro=o.realism==='pro',strength=pro?1:0,tw=o.th*P.t*1.6;
 lines.slice(pg*per,(pg+1)*per).forEach((ln,k)=>{
-const base=top+(k+1)*lh-Math.round(lh*.14),slope=(R()-.5)*j*7;
-for(const it of ln.items){let cx=left+it.x;
+const base=top+(k+1)*lh-Math.round(lh*.14),phase=R()*Math.PI*2,slope=(R()-.5)*j*(pro?12:7),wave=(R()-.5)*j*(pro?2.8:0);
+for(const it of ln.items){let cx=left+it.x+(pro?(R()-.5)*j*1.8:0);
 for(const r of it.w){const fs=ln.fs*(r.m?.62:1);y.font=L.f(fs);const yo=r.m==1?-ln.fs*.38:r.m==2?ln.fs*.2:0;
-for(const ch of r.t){const cw=y.measureText(ch).width,jx=(R()-.5)*j*1.4,jy=(R()-.5)*j*2.6,rot=(R()-.5)*j*.14,sz=1+(R()-.5)*j*.12,pr=.78+R()*.22,v=Math.round((1-pr)*255);
+for(const ch of r.t){const cw=y.measureText(ch).width,progress=(cx-left)/maxW;
+const jx=(R()-.5)*j*(pro?2.5:1.4),jy=(R()-.5)*j*(pro?4.2:2.6)+Math.sin(progress*8+phase)*wave;
+const rot=(R()-.5)*j*(pro?.22:.14)+(pro?Math.sin(progress*5+phase)*j*.025:0);
+const sz=1+(R()-.5)*j*(pro?.19:.12),pr=.68+R()*(pro?.32:.22),v=Math.round((1-pr)*255);
 y.save();y.translate(cx+cw/2+jx,base+yo+jy+(cx-left)/maxW*slope);y.rotate(rot);y.scale(sz,sz);
-y.fillStyle=y.strokeStyle=`rgb(${v},${v},${v})`;y.lineWidth=tw*(.85+R()*.3)+(ln.fs>o.size?.5:0);
-y.fillText(ch,-cw/2,0);if(y.lineWidth>.05)y.strokeText(ch,-cw/2,0);y.restore();cx+=cw+(R()-.35)*j*.9}}}});
+y.globalAlpha=pro?.91+R()*.09:1;
+y.fillStyle=y.strokeStyle=`rgb(${v},${v},${v})`;y.lineWidth=tw*(pro?.72+R()*.62:.85+R()*.3)+(ln.fs>o.size?.5:0);
+y.fillText(ch,-cw/2,0);if(y.lineWidth>.05)y.strokeText(ch,-cw/2,0);y.restore();
+cx+=cw+(R()-.35)*j*(pro?1.65:.9)+(pro?(R()-.5)*.42:0)}}}});
 inkify(ic,sc,P,o.ink,o.rough,o.ink2,o.mix);
 x.setTransform(1,0,0,1,0,0);x.drawImage(ic,0,0);
 if(o.fin==='scan'){x.fillStyle='rgba(110,110,115,.07)';x.fillRect(0,0,cv.width,cv.height);
@@ -298,7 +318,7 @@ const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixe
 await dl.save({filename:'sinov-varagi.pdf',data:doc.output('blob')});say('Saqlandi ✓ — chop eting va eng yaxshi qatorni tanlang.')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'Sinov varagʻini saqlab boʻlmadi.')}};$('clear').onclick=()=>{$('txt').value='';go()};
 let t;function go(){clearTimeout(t);t=setTimeout(render,250)}
 [['th','v1'],['rough','v2'],['size','v3'],['ls','v4'],['jit','v5'],['margin','v6'],['pd','v7'],['mx','v8']].forEach(([a,b])=>$(a).addEventListener('input',()=>{$(b).textContent=$(a).value}));
-['txt','font','paper','page','fin','pen','th','rough','size','ls','jit','margin','pd','bw','mx'].forEach(i=>$(i).addEventListener('input',go));
+['txt','font','realism','paper','page','fin','pen','th','rough','size','ls','jit','margin','pd','bw','mx'].forEach(i=>$(i).addEventListener('input',go));
 document.fonts&&document.fonts.ready.then(()=>{go();hero()});go();hero();
 </script>
 </body>

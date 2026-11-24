@@ -47,6 +47,21 @@ textarea{min-height:200px;resize:vertical}
 #settingsPanel{max-height:2200px;overflow:hidden;transition:max-height .25s ease,opacity .2s ease}
 #settingsPanel.is-hidden{max-height:0!important;opacity:0;pointer-events:none;margin:0;padding:0}
 
+.font-picker{grid-column:1/-1;min-width:0}
+.font-search{width:100%;background:var(--bg2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font:inherit;margin:5px 0 8px}
+.font-tools{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 0 9px}
+.font-fav-filter{padding:6px 11px;font-size:12px;white-space:nowrap}
+.font-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:440px;overflow:auto;padding:2px 3px 8px}
+.font-card{position:relative;min-width:0;min-height:102px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2);color:var(--fg);cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;gap:7px;transition:border-color .15s,background .15s}
+.font-card.selected{border:2px solid var(--acc);padding:9px 11px;background:color-mix(in srgb,var(--acc) 12%,var(--card))}
+.font-card .font-sample{font-size:29px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:20px}
+.font-card .font-name{font-size:13px;font-weight:600;overflow-wrap:anywhere}
+.font-card .font-star{position:absolute;right:8px;top:7px;border:0;background:transparent;color:var(--mut);font-size:20px;line-height:1;padding:2px;cursor:pointer}
+.font-card .font-star.active{color:var(--acc)}
+.font-group{grid-column:1/-1;color:var(--mut);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:7px 2px 0}
+.font-empty{grid-column:1/-1;color:var(--mut);font-size:13px;padding:15px 4px}
+.font-source{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+@media(min-width:520px){.font-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 input[type=range]{width:100%;accent-color:var(--acc)}
 .inks{display:flex;gap:9px}.inks button{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);cursor:pointer}.inks .on{outline:2px solid var(--fg);outline-offset:2px}
@@ -89,7 +104,13 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div class="row">
 <div><label>Yozuv realizmi</label><select id="realism"><option value="standard">Standart (hozirgi)</option><option value="pro">Professional — tabiiy qoʻlyozma</option></select></div>
 <div><label>Ruchka turi</label><select id="pen"><option value="bp">Sharikli ruchka</option><option value="gel">Gel ruchka</option><option value="pen">Oddiy qalam</option></select></div>
-<div><label>Yozuv uslubi (<span id="nf">0</span> xil)</label><select id="font"></select></div>
+<div class="font-picker">
+<label>Yozuv uslubi — <span id="nf">0</span> ta tayyor namuna</label>
+<input id="fontSearch" class="font-search" type="search" placeholder="Shriftlarni qidirish..." autocomplete="off">
+<div class="font-tools"><span id="fontCount" class="hint">Yozuv uslubini tanlang</span><button class="g font-fav-filter" id="fontFavFilter" type="button" aria-pressed="false">☆ Sevimlilar</button></div>
+<div id="fontGallery" class="font-gallery" aria-label="Yozuv uslublari"></div>
+<select id="font" class="font-source" aria-hidden="true" tabindex="-1"></select>
+</div>
 <div><label>Qogʻoz</label><select id="paper"><option value="ruled">Chiziqli</option><option value="notebook">Daftar</option><option value="grid">Katakli</option><option value="dotted">Nuqtali</option><option value="plain">Oq varaq</option></select></div>
 <div><label>Oʻlcham</label><select id="page"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></div>
 </div>
@@ -206,7 +227,45 @@ const FG={'Kirill + lotin (· kir)':['Caveat','Marck Script','Bad Script','Neuch
 'Marker / qalin (lotin)':['Permanent Marker','Rock Salt','Caveat Brush','Short Stack','Nanum Pen Script']};
 const CY=new Set(FG['Kirill + lotin (· kir)']);
 Object.entries(FG).forEach(([g,a])=>{const og=document.createElement('optgroup');og.label=g;a.forEach(n=>og.appendChild(new Option(n+(CY.has(n)?' · kir':''),n)));$('font').appendChild(og)});
+
 $('nf').textContent=$('font').options.length;
+const fontGallery=$('fontGallery'),fontSearch=$('fontSearch'),fontCount=$('fontCount'),favFilter=$('fontFavFilter');
+let showFav=false;const favKey='qolyozma-favorite-fonts';
+function readFav(){try{return new Set(JSON.parse(localStorage.getItem(favKey)||'[]'))}catch(e){return new Set()}}
+let favoriteFonts=readFav();
+function saveFav(){try{localStorage.setItem(favKey,JSON.stringify([...favoriteFonts]))}catch(e){}}
+function renderFontGallery(){
+ const q=fontSearch.value.trim().toLocaleLowerCase('uz'),selected=$('font').value;
+ fontGallery.innerHTML='';let visible=0;
+ [...$('font').children].forEach(group=>{
+  const opts=[...group.children].filter(opt=>{
+   const match=opt.textContent.toLocaleLowerCase('uz').includes(q);
+   return match&&(!showFav||favoriteFonts.has(opt.value));
+  });
+  if(!opts.length)return;
+  const heading=document.createElement('div');heading.className='font-group';heading.textContent=group.label;fontGallery.appendChild(heading);
+  opts.forEach(opt=>{
+   visible++;const card=document.createElement('button');card.type='button';card.className='font-card'+(opt.value===selected?' selected':'');card.setAttribute('aria-pressed',String(opt.value===selected));card.title=opt.textContent;
+   const sample=document.createElement('span');sample.className='font-sample';sample.textContent='Aa';sample.style.fontFamily='"'+opt.value+'",cursive';
+   const name=document.createElement('span');name.className='font-name';name.textContent=opt.textContent;
+   const star=document.createElement('button');star.type='button';star.className='font-star'+(favoriteFonts.has(opt.value)?' active':'');star.textContent=favoriteFonts.has(opt.value)?'★':'☆';star.setAttribute('aria-label',favoriteFonts.has(opt.value)?'Sevimlilardan olib tashlash':'Sevimlilarga qoʻshish');
+   star.addEventListener('click',ev=>{ev.stopPropagation();if(favoriteFonts.has(opt.value))favoriteFonts.delete(opt.value);else favoriteFonts.add(opt.value);saveFav();renderFontGallery()});
+   card.append(sample,name,star);
+   card.addEventListener('click',()=>{$('font').value=opt.value;renderFontGallery();loadFont(opt.value).then(()=>{sample.style.fontFamily='"'+opt.value+'",cursive'});go()});
+   fontGallery.appendChild(card);
+   if('IntersectionObserver'in window){
+    const io=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){loadFont(opt.value).then(()=>{sample.style.fontFamily='"'+opt.value+'",cursive'});io.disconnect()}});
+    io.observe(card);
+   }else loadFont(opt.value).then(()=>{sample.style.fontFamily='"'+opt.value+'",cursive'});
+  });
+ });
+ fontCount.textContent=visible+' ta uslub ko‘rsatilmoqda';
+ if(!visible){const empty=document.createElement('div');empty.className='font-empty';empty.textContent=showFav?'Hozircha sevimli shrift belgilanmagan.':'Mos yozuv uslubi topilmadi.';fontGallery.appendChild(empty)}
+}
+fontSearch.addEventListener('input',renderFontGallery);
+favFilter.addEventListener('click',()=>{showFav=!showFav;favFilter.setAttribute('aria-pressed',String(showFav));favFilter.textContent=showFav?'★ Sevimlilar: yoqilgan':'☆ Sevimlilar';renderFontGallery()});
+$('font').addEventListener('change',renderFontGallery);
+renderFontGallery();
 const FL={};function loadFont(n){return FL[n]||(FL[n]=new Promise(res=>{const l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family='+n.replace(/ /g,'+')+'&display=swap';l.onload=l.onerror=()=>res();document.head.appendChild(l)}))}
 // pen presets: blur, rough, skip, pool, alpha, thickness(css px)
 const PEN={bp:{b:.5,k:1,s:.55,p:.3,a:.95,t:.5},gel:{b:.55,k:.45,s:.12,p:.12,a:1,t:.75},pen:{b:.9,k:1.2,s:.9,p:0,a:.8,t:.7,c:[70,70,76]}};

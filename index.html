@@ -165,8 +165,8 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div class="card ctl">
 <label for="txt">Matningiz</label>
 <div class="filebox" id="filebox">
-  <input id="sourceFile" type="file" accept=".pdf,.docx,.xlsx,.xls,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-  <div class="filemeta"><strong>PDF yoki Word faylni tanlang</strong><span>PDF · DOCX · 30 MB gacha</span></div>
+  <input id="sourceFile" type="file" accept=".pdf,.docx,.xlsx,.xls,.jpg,.jpeg,.png,image/jpeg,image/png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+  <div class="filemeta"><strong>PDF, Word, Excel yoki rasmni tanlang</strong><span>PDF · DOCX · XLSX · XLS · JPG · JPEG · PNG · 30 MB gacha</span></div>
   <button class="g" type="button" id="pickFile">Fayl yuklash</button>
 </div>
 <div class="hint" id="studioSelectedFile" role="status">Hozircha fayl tanlanmagan.</div>
@@ -301,12 +301,19 @@ async function processStudioFile(file){
    }
    extracted=pages.filter(Boolean).join('\n\n');
    if(!extracted.trim())throw new Error('PDF ichidan matn topilmadi. Bu skanerlangan rasmli PDF boʻlishi mumkin; hozircha matnli PDF yuklang.');
-  }else if(ext==='xlsx'||ext==='xls'){
-   if(!window.XLSX)throw new Error('Excel modulini yuklab boʻlmadi. Internet aloqasini tekshiring.');
-   const book=XLSX.read(await file.arrayBuffer(),{type:'array'});
-   extracted=book.SheetNames.map(name=>'# '+name+'\n'+XLSX.utils.sheet_to_csv(book.Sheets[name],{FS:'\t'})).join('\n\n');
+  }else if(['jpg','jpeg','png'].includes(ext)){
+   if(!window.Tesseract)throw new Error('OCR moduli yuklanmadi. Internet aloqasini tekshiring.');
+   sayFile('Rasmdagi matn tanilmoqda. Birinchi marta til fayllari yuklanishi mumkin…');
+   const worker=await Tesseract.createWorker('uzb+eng',1,{logger:m=>{
+    if(m.status==='recognizing text')sayFile('Rasmdagi matn ajratilmoqda: '+Math.round((m.progress||0)*100)+'%');
+   }});
+   try{
+    const result=await worker.recognize(file);
+    extracted=result.data.text||'';
+   }finally{await worker.terminate()}
+   if(!extracted.trim())throw new Error('Rasm ichidan matn topilmadi. Aniqroq, yorugʻ rasm yuklab koʻring.');
   }else{
-   throw new Error('PDF, Word DOCX yoki Excel XLSX/XLS faylini tanlang.');
+   throw new Error('PDF, Word DOCX, Excel XLSX/XLS yoki JPG/JPEG/PNG rasm tanlang.');
   }
   extracted=extracted.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
   if(!extracted)throw new Error('Faylda oʻqiladigan matn topilmadi.');

@@ -267,6 +267,7 @@ settingsButton.addEventListener('click',()=>{
 const sourceFile=$('sourceFile'),fileStatus=$('fileStatus');
 $('pickFile').addEventListener('click',()=>sourceFile.click());
 async function processStudioFile(file){
+ const appSelectedFont=$('font').value;
  const ext=file.name.toLowerCase().split('.').pop();
  const sayFile=(message,kind='')=>{fileStatus.textContent=message;fileStatus.className='hint '+kind};
  if(file.size>30*1024*1024){sayFile('Fayl hajmi 30 MB dan oshmasligi kerak.','error');return}
@@ -317,8 +318,11 @@ async function processStudioFile(file){
   }
   extracted=extracted.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
   if(!extracted)throw new Error('Faylda oʻqiladigan matn topilmadi.');
+  // Imported documents provide text only; rendering always uses the font selected in this app.
+  $('font').value=appSelectedFont;
+  await loadFont(appSelectedFont);
   $('txt').value=extracted;go();
-  sayFile('✓ '+file.name+' — matn ajratildi ('+extracted.length.toLocaleString('uz-UZ')+' belgi). Qoʻlyozma tayyorlanmoqda.','ok');
+  sayFile('✓ '+file.name+' — matn ajratildi. Dasturda tanlangan “'+appSelectedFont+'” qoʻlyozma shrifti qoʻllanmoqda.','ok');
  }catch(err){sayFile(err.message||'Faylni oʻqishda xatolik yuz berdi.','error')}
 }
 sourceFile.addEventListener('change',()=>{

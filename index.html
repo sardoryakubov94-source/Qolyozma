@@ -33,7 +33,7 @@ section{padding:46px 0;border-top:1px solid var(--line)}
 .num{color:var(--acc);font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
 .grid{display:grid;gap:16px;grid-template-columns:1fr}
 /* Studio layout: input, live preview and settings stay easy to reach */
-.studio-grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);grid-template-areas:"input preview" "settings preview";align-items:start;gap:16px}
+.export-footer{margin:14px 0 4px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);text-align:center}.export-footer #pdf{width:100%;max-width:420px;min-height:48px}.export-footer .hint{margin:9px 0 0}.studio-grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);grid-template-areas:"input preview" "settings preview";align-items:start;gap:16px}
 .studio-grid>.ctl{grid-area:input;min-width:0}
 .studio-grid>.settings-card{grid-area:settings;min-width:0}
 .studio-grid>#pages{grid-area:preview;min-width:0;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;padding-right:3px}
@@ -127,8 +127,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div class="hint" id="fileStatus" role="status">Fayl ichidagi matn avtomatik ajratilib, quyidagi maydonga joylanadi. Mavjud matn almashtiriladi.</div>
 <textarea id="txt"></textarea>
 <div class="hint"># Sarlavha · x^2 yuqori indeks · H_2O quyi indeks · C_{12}, x^{n+1} — koʻp belgili</div>
-<div class="btns"><button class="b" id="pdf">Barcha sahifalarni PDF yuklab olish</button><button class="g" id="sample">Namuna</button><button class="g" id="clear">Tozalash</button><button class="g" id="test">Sinov varagʻi</button></div>
-<div id="msg"></div>
+<div id="msg" role="status"></div>
 </div>
 
 <div class="card settings-card">
@@ -188,6 +187,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 </div>
 
 <div id="pages" aria-live="polite"></div>
+<div class="export-footer"><button class="b" id="pdf">Barcha tayyor sahifalarni PDF yuklab olish</button><p class="hint">PNG va JPEG formatlari har bir tayyor sahifaning tagida alohida joylashgan.</p></div>
 </div></div></section>
 
 <section><div class="w"><div class="num">02 — Nima uchun Qoʻlyozma</div><h2>Shrift emas, <em>siyoh izi.</em></h2>
@@ -430,14 +430,6 @@ if(!window.jspdf)return say('PDF kutubxonasi yuklanmadi — internetni tekshirin
 const [W,H]=DIM[L.o.page],sc=+$('dpi').value;try{const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});
 const printClean=$('printClean').checked;for(let i=0;i<L.n;i++){say(`PDF tayyorlanmoqda: ${i+1} / ${L.n}…`);await new Promise(r=>setTimeout(r,20));if(i)doc.addPage([W,H],'portrait');doc.addImage(drawPage(L,i,sc,printClean).toDataURL('image/jpeg',.98),'JPEG',0,0,W,H)}
 await dl.save({filename:'qolyozma.pdf',data:doc.output('blob')});say('Saqlandi ✓')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'PDF saqlab boʻlmadi. 200 DPI ni sinab koʻring.')}};
-$('sample').onclick=()=>{$('txt').value=SAMPLE;go()};
-$('test').onclick=async()=>{if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');if(!window.jspdf)return say('PDF kutubxonasi yuklanmadi.');
-const b=opts(),sc=Math.min(+$('dpi').value,2.083),[W,H]=DIM.a4,out=document.createElement('canvas');out.width=W*sc;out.height=H*sc;const x=out.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,out.width,out.height);
-try{const lv=[-30,-15,0,15,30];for(let i=0;i<5;i++){say(`Sinov varagʻi: ${i+1} / 5…`);await new Promise(r=>setTimeout(r,20));
-const o={...b,page:'a4',paper:'plain',ink:adj(ink,lv[i]),ink2:adj(ink2,lv[i]),text:`Tuzatish ${lv[i]>0?'+':''}${lv[i]}%\nSinov: Olma 0123 Hello`},Lh=layout(o);Lh.H=Math.round(Lh.top+2*Lh.lh+14);
-x.drawImage(drawPage(Lh,0,sc),0,(20+i*165)*sc)}
-const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});doc.addImage(out.toDataURL('image/jpeg',.95),'JPEG',0,0,W,H);
-await dl.save({filename:'sinov-varagi.pdf',data:doc.output('blob')});say('Saqlandi ✓ — chop eting va eng yaxshi qatorni tanlang.')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'Sinov varagʻini saqlab boʻlmadi.')}};$('clear').onclick=()=>{$('txt').value='';go()};
 let t;function go(){clearTimeout(t);t=setTimeout(render,250)}
 [['th','v1'],['rough','v2'],['size','v3'],['ls','v4'],['jit','v5'],['margin','v6'],['pd','v7'],['mx','v8']].forEach(([a,b])=>$(a).addEventListener('input',()=>{$(b).textContent=$(a).value}));
 ['txt','font','realism','paper','page','fin','pen','th','rough','size','ls','jit','margin','pd','bw','mx'].forEach(i=>$(i).addEventListener('input',go));

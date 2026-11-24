@@ -536,7 +536,7 @@ for(const r of it.w){const fs=ln.fs*(r.m?.62:1);y.font=L.f(fs);const yo=r.m==1?-
 for(const ch of r.t){const cw=y.measureText(ch).width,progress=(cx-left)/maxW;
 const jx=(R()-.5)*j*(pro?2.5:1.4),jy=(R()-.5)*j*(pro?4.2:2.6)+Math.sin(progress*8+phase)*wave;
 const apple=o.font==='Homemade Apple',appleUpper=apple&&/[A-Z]/.test(ch),isAppleT=apple&&ch==='T';
-const rot=appleUpper?(-.018+(R()-.5)*.008):((R()-.5)*j*(pro?.34:.23)+(pro?Math.sin(progress*5+phase)*j*.04:0));
+const rot=(R()-.5)*j*(pro?.34:.23)*(appleUpper?.38:1)+(pro?Math.sin(progress*5+phase)*j*.04*(appleUpper?.45:1):0);
 const sz=1+(R()-.5)*j*(pro?.25:.17)*(appleUpper?.48:1),pr=.68+R()*(pro?.32:.22),v=Math.round((1-pr)*255);
 let form=0;
 if(apple){
@@ -549,7 +549,9 @@ if(apple){
 }
 const forms=[{sx:.82,sy:1.12,slant:-.145,tilt:-.045},{sx:1.17,sy:.89,slant:.145,tilt:.048},{sx:.91,sy:.94,slant:.105,tilt:-.032},{sx:1.10,sy:1.13,slant:-.105,tilt:.038},{sx:.98,sy:1.02,slant:.018,tilt:-.052}];
 const shape=appleUpper
- ?{sx:(ch==='I'||ch==='L'?.99:.96)+R()*(ch==='I'||ch==='L'?.035:.08),sy:.97+R()*.06,slant:-.158+(R()-.5)*.012,tilt:-.012+(R()-.5)*.008}
+ ?(ch==='I'?{sx:.99+R()*.035,sy:.98+R()*.04,slant:-.155+(R()-.5)*.025,tilt:-.012+(R()-.5)*.018}
+  :ch==='L'?{sx:.99+R()*.04,sy:.98+R()*.04,slant:-.135+(R()-.5)*.025,tilt:-.01+(R()-.5)*.018}
+  :{sx:.96+R()*.08,sy:.97+R()*.06,slant:(R()-.5)*.075,tilt:(R()-.5)*.03})
  :(apple?forms[form]:{sx:1,sy:1,slant:0,tilt:0});
 y.save();y.translate(cx+cw/2+jx,base+yo+jy+(cx-left)/maxW*slope);y.rotate(rot+shape.tilt);y.scale(sz*shape.sx,sz*shape.sy);y.transform(1,0,shape.slant,1,0,0);
 y.globalAlpha=pro?.91+R()*.09:1;

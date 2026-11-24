@@ -32,6 +32,34 @@ h2{font-size:clamp(28px,4vw,42px)}em{color:var(--acc)}
 section{padding:46px 0;border-top:1px solid var(--line)}
 .num{color:var(--acc);font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
 .grid{display:grid;gap:16px;grid-template-columns:1fr}
+/* Studio layout: input, live preview and settings stay easy to reach */
+.studio-grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);grid-template-areas:"input preview" "settings preview";align-items:start;gap:16px}
+.studio-grid>.ctl{grid-area:input;min-width:0}
+.studio-grid>.settings-card{grid-area:settings;min-width:0}
+.studio-grid>#pages{grid-area:preview;min-width:0;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;padding-right:3px}
+.settings-toggle{width:100%;text-align:left;margin:0 0 10px;font-weight:650}
+#settingsPanel{display:block;max-height:none;overflow:visible;opacity:1;transition:opacity .2s ease}
+#settingsPanel.is-hidden{display:none!important;max-height:none!important;opacity:0;pointer-events:none;margin:0;padding:0}
+.setting-group{border:1px solid var(--line);border-radius:12px;padding:0 12px;margin:0 0 9px;background:var(--bg2)}
+.setting-group summary{padding:12px 2px;font-weight:650;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.setting-group summary::-webkit-details-marker{display:none}
+.setting-group summary:after{content:"+";color:var(--acc);font-size:20px;line-height:1}
+.setting-group[open] summary:after{content:"−"}
+.setting-group>*:not(summary){margin-bottom:12px}
+.setting-group .font-gallery{max-height:300px}
+.studio-grid .ctl textarea{min-height:190px}
+@media(max-width:959px){
+ .studio-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"input" "preview" "settings"}
+ .studio-grid>#pages{position:static;max-height:none;overflow:visible;padding:0}
+ .studio-grid>.ctl textarea{min-height:150px}
+}
+@media(max-width:480px){
+ .studio-grid{gap:12px}
+ .studio-grid>.card{padding:13px}
+ .studio-grid .btns button{flex:1 1 calc(50% - 8px)}
+ .font-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
 @media(min-width:960px){.grid{grid-template-columns:390px 1fr;align-items:start}.ctl{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
 label{display:block;font-size:12px;color:var(--mut);margin:11px 0 4px}
@@ -88,7 +116,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 
 <section id="studio"><div class="w">
 <div class="num">01 — Studiya</div><h2>Ruchkani tanlang. <em>Qogʻozni</em> tanlang.</h2>
-<div class="grid">
+<div class="grid studio-grid">
 <div class="card ctl">
 <label for="txt">Matningiz</label>
 <div class="filebox" id="filebox">
@@ -99,11 +127,19 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div class="hint" id="fileStatus" role="status">Fayl ichidagi matn avtomatik ajratilib, quyidagi maydonga joylanadi. Mavjud matn almashtiriladi.</div>
 <textarea id="txt"></textarea>
 <div class="hint"># Sarlavha · x^2 yuqori indeks · H_2O quyi indeks · C_{12}, x^{n+1} — koʻp belgili</div>
+<div class="btns"><button class="b" id="pdf">Barcha sahifalarni PDF yuklab olish</button><button class="g" id="sample">Namuna</button><button class="g" id="clear">Tozalash</button><button class="g" id="test">Sinov varagʻi</button></div>
+<div id="msg"></div>
+</div>
+
+<div class="card settings-card">
 <button class="g settings-toggle" id="toggleSettings" type="button" aria-expanded="true" aria-controls="settingsPanel"><span id="settingsToggleIcon">▾</span> Sozlamalarni yashirish</button>
 <div id="settingsPanel">
+<details class="setting-group" open>
+<summary>Yozuv uslubi va ruchka</summary>
 <div class="row">
 <div><label>Yozuv realizmi</label><select id="realism"><option value="standard">Standart (hozirgi)</option><option value="pro">Professional — tabiiy qoʻlyozma</option></select></div>
 <div><label>Ruchka turi</label><select id="pen"><option value="bp">Sharikli ruchka</option><option value="gel">Gel ruchka</option><option value="pen">Oddiy qalam</option></select></div>
+</div>
 <div class="font-picker">
 <label>Yozuv uslubi — <span id="nf">0</span> ta tayyor namuna</label>
 <input id="fontSearch" class="font-search" type="search" placeholder="Shriftlarni qidirish..." autocomplete="off">
@@ -111,28 +147,47 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div id="fontGallery" class="font-gallery" aria-label="Yozuv uslublari"></div>
 <select id="font" class="font-source" aria-hidden="true" tabindex="-1"></select>
 </div>
+</details>
+
+<details class="setting-group">
+<summary>Qogʻoz va sahifa</summary>
+<div class="row">
 <div><label>Qogʻoz</label><select id="paper"><option value="ruled">Chiziqli</option><option value="notebook">Daftar</option><option value="grid">Katakli</option><option value="dotted">Nuqtali</option><option value="plain">Oq varaq</option></select></div>
 <div><label>Oʻlcham</label><select id="page"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></div>
 </div>
+</details>
+
+<details class="setting-group">
+<summary>Siyoh rangi va printer</summary>
 <label>Siyoh rangi</label><div class="inks" id="inks"></div>
 <div class="row"><div><label>Oʻzingizning rangingiz</label><input type="color" id="cp" value="#1832aa" style="width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)"></div>
 <div><label>Printer tuzatish: <span id="v7">0</span>%</label><input type="range" id="pd" min="-50" max="50" value="0"></div></div>
 <div class="row"><div><label>Aralash rang (ikkinchi ton)</label><input type="color" id="cp2" value="#0b174d" style="width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)"></div>
 <div><label>Aralashish: <span id="v8">40</span>%</label><input type="range" id="mx" min="0" max="100" value="40"></div></div>
 <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="bw"> Qora-oq printer (rang kulrangga aylanadi)</label>
-<div class="hint">Printerlar rangni oʻzgartiradi (RGB→CMYK): koʻk siyoh binafsha yoki och chiqishi mumkin. Avval “Sinov varagʻi”ni chop eting, eng yaxshi chiqqan qatorga qarab tuzatishni tanlang. Qora siyoh uchun printer sozlamasida “Grayscale” ni yoqing.
+<div class="hint">Printerlar rangni oʻzgartiradi (RGB→CMYK): koʻk siyoh binafsha yoki och chiqishi mumkin. Avval “Sinov varagʻi”ni chop eting, eng yaxshi chiqqan qatorga qarab tuzatishni tanlang. Qora siyoh uchun printer sozlamasida “Grayscale” ni yoqing.</div>
+</details>
+
+<details class="setting-group">
+<summary>Qoʻlyozma tabiiyligi va oʻlchamlari</summary>
 <label>Ruchka uchi yoʻgʻonligi: <span id="v1">55</span>%</label><input type="range" id="th" min="0" max="140" value="55">
 <label>Qirralar notekisligi: <span id="v2">60</span>%</label><input type="range" id="rough" min="0" max="100" value="60">
 <label>Harf oʻlchami: <span id="v3">26</span></label><input type="range" id="size" min="18" max="40" value="26">
 <label>Qator oraligʻi: <span id="v4">1.6</span></label><input type="range" id="ls" min="1.2" max="2.2" step=".05" value="1.6">
 <label>Tabiiylik (qiyshiqlik): <span id="v5">55</span>%</label><input type="range" id="jit" min="0" max="100" value="55">
 <label>Chap hoshiya: <span id="v6">60</span></label><input type="range" id="margin" min="30" max="120" value="60">
+</details>
+
+<details class="setting-group">
+<summary>Koʻrinish va eksport sifati</summary>
 <div class="row"><div><label>Koʻrinish</label><select id="fin"><option value="clean">Toza (printer uchun)</option><option value="scan">Skaner qilingan</option></select></div>
 <div><label>PDF sifati</label><select id="dpi"><option value="3.125">300 DPI (printer)</option><option value="2.083">200 DPI</option><option value="1.5">Yengil (ekran)</option></select></div></div>
+</details>
 </div>
-<div class="btns"><button class="b" id="pdf">Barcha sahifalarni PDF yuklab olish</button><button class="g" id="sample">Namuna</button><button class="g" id="clear">Tozalash</button><button class="g" id="test">Sinov varagʻi</button></div>
-<div id="msg"></div></div>
-<div id="pages"></div></div></div></section>
+</div>
+
+<div id="pages" aria-live="polite"></div>
+</div></div></section>
 
 <section><div class="w"><div class="num">02 — Nima uchun Qoʻlyozma</div><h2>Shrift emas, <em>siyoh izi.</em></h2>
 <div class="f3">

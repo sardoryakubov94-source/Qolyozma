@@ -561,7 +561,7 @@ if(apple){
 }
 const forms=[{sx:.82,sy:1.12,slant:-.145,tilt:-.045},{sx:1.17,sy:.89,slant:.145,tilt:.048},{sx:.91,sy:.94,slant:.105,tilt:-.032},{sx:1.10,sy:1.13,slant:-.105,tilt:.038},{sx:.98,sy:1.02,slant:.018,tilt:-.052}];
 const shape=appleUpper
- ?(ch==='I'?{sx:.99+R()*.035,sy:.98+R()*.04,slant:-.155+(R()-.5)*.025,tilt:-.012+(R()-.5)*.018}
+ ?(ch==='I'?{sx:.99+R()*.035,sy:.98+R()*.04,slant:-.225+(R()-.5)*.015,tilt:-.012+(R()-.5)*.018}
   :ch==='L'?{sx:.99+R()*.04,sy:.98+R()*.04,slant:-.135+(R()-.5)*.025,tilt:-.01+(R()-.5)*.018}
   :{sx:.96+R()*.08,sy:.97+R()*.06,slant:(R()-.5)*.075,tilt:(R()-.5)*.03})
  :(apple?forms[form]:{sx:1,sy:1,slant:0,tilt:0});

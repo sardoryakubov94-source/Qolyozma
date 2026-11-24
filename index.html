@@ -245,13 +245,15 @@ function renderFontGallery(){
   if(!opts.length)return;
   const heading=document.createElement('div');heading.className='font-group';heading.textContent=group.label;fontGallery.appendChild(heading);
   opts.forEach(opt=>{
-   visible++;const card=document.createElement('button');card.type='button';card.className='font-card'+(opt.value===selected?' selected':'');card.setAttribute('aria-pressed',String(opt.value===selected));card.title=opt.textContent;
+   visible++;const card=document.createElement('div');card.className='font-card'+(opt.value===selected?' selected':'');card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-pressed',String(opt.value===selected));card.title=opt.textContent;
    const sample=document.createElement('span');sample.className='font-sample';sample.textContent='Aa';sample.style.fontFamily='"'+opt.value+'",cursive';
    const name=document.createElement('span');name.className='font-name';name.textContent=opt.textContent;
    const star=document.createElement('button');star.type='button';star.className='font-star'+(favoriteFonts.has(opt.value)?' active':'');star.textContent=favoriteFonts.has(opt.value)?'★':'☆';star.setAttribute('aria-label',favoriteFonts.has(opt.value)?'Sevimlilardan olib tashlash':'Sevimlilarga qoʻshish');
    star.addEventListener('click',ev=>{ev.stopPropagation();if(favoriteFonts.has(opt.value))favoriteFonts.delete(opt.value);else favoriteFonts.add(opt.value);saveFav();renderFontGallery()});
    card.append(sample,name,star);
-   card.addEventListener('click',()=>{$('font').value=opt.value;renderFontGallery();loadFont(opt.value).then(()=>{sample.style.fontFamily='"'+opt.value+'",cursive'});go()});
+   const chooseFont=()=>{$('font').value=opt.value;renderFontGallery();loadFont(opt.value).then(()=>{sample.style.fontFamily='"'+opt.value+'",cursive'});go()};
+   card.addEventListener('click',chooseFont);
+   card.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();chooseFont()}});
    fontGallery.appendChild(card);
    if('IntersectionObserver'in window){
     const io=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){loadFont(opt.value).then(()=>{sample.style.fontFamily='"'+opt.value+'",cursive'});io.disconnect()}});

@@ -182,6 +182,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <summary>Koʻrinish va eksport sifati</summary>
 <div class="row"><div><label>Koʻrinish</label><select id="fin"><option value="clean">Toza (printer uchun)</option><option value="scan">Skaner qilingan</option></select></div>
 <div><label>PDF sifati</label><select id="dpi"><option value="3.125">300 DPI (printer)</option><option value="2.083">200 DPI</option><option value="1.5">Yengil (ekran)</option></select></div></div>
+<label class="print-clean-option" style="display:flex;gap:9px;align-items:flex-start;margin-top:10px"><input type="checkbox" id="printClean" checked><span><strong>Printer uchun faqat yozuv</strong><small style="display:block;color:var(--mut);font-weight:400">PDF yuklanganda qogʻoz foni, chiziqlar, kataklar va skaner effektlari olib tashlanadi. Oq fonda faqat qoʻlyozma siyohi qoladi.</small></span></label>
 </details>
 </div>
 </div>
@@ -370,15 +371,15 @@ const x2=cur.length?cw+sp:0;cur.push({w,x:x2});cw=x2+ww}
 if(cur.length)lines.push({items:cur,h:p.h,fs})}
 const per=Math.max(1,Math.floor((H-top-bottom)/lh));
 return{o,W,H,lh,left,top,maxW,f,lines,per,n:Math.max(1,Math.ceil(lines.length/per))}}
-function drawPage(L,pg,sc){
+function drawPage(L,pg,sc,printClean=false){
 const {o,W,H,lh,left,top,maxW,f,lines,per}=L,P=PEN[o.pen];
 const cv=document.createElement('canvas');cv.width=Math.round(W*sc);cv.height=Math.round(H*sc);
-const x=cv.getContext('2d');x.scale(sc,sc);x.fillStyle='#fdfcf8';x.fillRect(0,0,W,H);x.lineWidth=1;
+const x=cv.getContext('2d');x.scale(sc,sc);x.fillStyle='#ffffff';x.fillRect(0,0,W,H);x.lineWidth=1;
 const pp=o.paper;
-if(pp==='ruled'||pp==='notebook'){x.strokeStyle='#b9d0e6';for(let k=1;k<=per;k++){const y=top+k*lh+.5;x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke()}
+if(!printClean&&(pp==='ruled'||pp==='notebook')){x.strokeStyle='#b9d0e6';for(let k=1;k<=per;k++){const y=top+k*lh+.5;x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke()}
 if(pp==='notebook'){x.strokeStyle='#e58a8a';x.beginPath();x.moveTo(left-14,0);x.lineTo(left-14,H);x.stroke()}}
-if(pp==='grid'){x.strokeStyle='#cfe0ea';const g=Math.round(lh/2);for(let a=0;a<W;a+=g){x.beginPath();x.moveTo(a+.5,0);x.lineTo(a+.5,H);x.stroke()}for(let b=0;b<H;b+=g){x.beginPath();x.moveTo(0,b+.5);x.lineTo(W,b+.5);x.stroke()}}
-if(pp==='dotted'){x.fillStyle='#b5c3cf';for(let a=lh;a<W;a+=lh/1.5)for(let b=top;b<H;b+=lh/1.5)x.fillRect(a,b,1.6,1.6)}
+if(!printClean&&pp==='grid'){x.strokeStyle='#cfe0ea';const g=Math.round(lh/2);for(let a=0;a<W;a+=g){x.beginPath();x.moveTo(a+.5,0);x.lineTo(a+.5,H);x.stroke()}for(let b=0;b<H;b+=g){x.beginPath();x.moveTo(0,b+.5);x.lineTo(W,b+.5);x.stroke()}}
+if(!printClean&&pp==='dotted'){x.fillStyle='#b5c3cf';for(let a=lh;a<W;a+=lh/1.5)for(let b=top;b<H;b+=lh/1.5)x.fillRect(a,b,1.6,1.6)}
 const ic=document.createElement('canvas');ic.width=cv.width;ic.height=cv.height;
 const y=ic.getContext('2d');y.scale(sc,sc);y.textBaseline='alphabetic';y.lineJoin='round';
 const R=rng(1337+pg*7919),j=o.jit,pro=o.realism==='pro',strength=pro?1:0,tw=o.th*P.t*1.6;
@@ -397,7 +398,7 @@ y.fillText(ch,-cw/2,0);if(y.lineWidth>.05)y.strokeText(ch,-cw/2,0);y.restore();
 cx+=cw+(R()-.35)*j*(pro?1.65:.9)+(pro?(R()-.5)*.42:0)}}}});
 inkify(ic,sc,P,o.ink,o.rough,o.ink2,o.mix);
 x.setTransform(1,0,0,1,0,0);x.drawImage(ic,0,0);
-if(o.fin==='scan'){x.fillStyle='rgba(110,110,115,.07)';x.fillRect(0,0,cv.width,cv.height);
+if(!printClean&&o.fin==='scan'){x.fillStyle='rgba(110,110,115,.07)';x.fillRect(0,0,cv.width,cv.height);
 const g=x.createRadialGradient(cv.width/2,cv.height/2,cv.width*.4,cv.width/2,cv.height/2,cv.height*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.2)');x.fillStyle=g;x.fillRect(0,0,cv.width,cv.height);
 for(let d=0;d<900;d++){x.fillStyle=`rgba(0,0,0,${R()*.08})`;x.fillRect(R()*cv.width,R()*cv.height,R()*2*sc+.5,R()*2*sc+.5)}}
 return cv}
@@ -427,7 +428,7 @@ try{
 $('pdf').onclick=async()=>{if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');
 if(!window.jspdf)return say('PDF kutubxonasi yuklanmadi — internetni tekshiring.');
 const [W,H]=DIM[L.o.page],sc=+$('dpi').value;try{const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});
-for(let i=0;i<L.n;i++){say(`PDF tayyorlanmoqda: ${i+1} / ${L.n}…`);await new Promise(r=>setTimeout(r,20));if(i)doc.addPage([W,H],'portrait');doc.addImage(drawPage(L,i,sc).toDataURL('image/jpeg',.95),'JPEG',0,0,W,H)}
+const printClean=$('printClean').checked;for(let i=0;i<L.n;i++){say(`PDF tayyorlanmoqda: ${i+1} / ${L.n}…`);await new Promise(r=>setTimeout(r,20));if(i)doc.addPage([W,H],'portrait');doc.addImage(drawPage(L,i,sc,printClean).toDataURL('image/jpeg',.98),'JPEG',0,0,W,H)}
 await dl.save({filename:'qolyozma.pdf',data:doc.output('blob')});say('Saqlandi ✓')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'PDF saqlab boʻlmadi. 200 DPI ni sinab koʻring.')}};
 $('sample').onclick=()=>{$('txt').value=SAMPLE;go()};
 $('test').onclick=async()=>{if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');if(!window.jspdf)return say('PDF kutubxonasi yuklanmadi.');

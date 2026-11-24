@@ -9,6 +9,8 @@
 <meta name="description" content="Matn va ilmiy maqolalarni sharikli ruchkada yozilgandek qiling. Printerda chiqarilganda ham haqiqiy qoʻlyozma. Bepul, roʻyxatdan oʻtmasdan.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 <style>
 :root{--bg:#0a0a0d;--bg2:#121217;--card:#16161c;--fg:#f1f0ec;--mut:#8f8f9a;--line:#26262e;--acc:#ffb86b;--accfg:#1a1206;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f7f5ef;--bg2:#efece3;--card:#fff;--fg:#17171a;--mut:#6a6a72;--line:#e0ddd2;--acc:#c2570c;--accfg:#fff}}
@@ -34,6 +36,12 @@ section{padding:46px 0;border-top:1px solid var(--line)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
 label{display:block;font-size:12px;color:var(--mut);margin:11px 0 4px}
 textarea,select{width:100%;background:var(--bg2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:9px;font:inherit;font-size:15px}
+.filebox{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg2);border:1px dashed var(--acc);border-radius:12px;padding:12px;margin:8px 0 4px}
+.filebox input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.filemeta{display:flex;flex:1;min-width:150px;flex-direction:column;gap:2px}
+.filemeta strong{font-size:14px}.filemeta span{font-size:12px;color:var(--mut)}
+#fileStatus{min-height:18px;margin:5px 0 10px}#fileStatus.error{color:#e46b6b}#fileStatus.ok{color:#36a477}
+
 textarea{min-height:200px;resize:vertical}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 input[type=range]{width:100%;accent-color:var(--acc)}
@@ -63,7 +71,14 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div class="num">01 — Studiya</div><h2>Ruchkani tanlang. <em>Qogʻozni</em> tanlang.</h2>
 <div class="grid">
 <div class="card ctl">
-<label for="txt">Matningiz</label><textarea id="txt"></textarea>
+<label for="txt">Matningiz</label>
+<div class="filebox" id="filebox">
+  <input id="sourceFile" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+  <div class="filemeta"><strong>PDF yoki Word faylni tanlang</strong><span>PDF · DOCX · 30 MB gacha</span></div>
+  <button class="g" type="button" id="pickFile">Fayl yuklash</button>
+</div>
+<div class="hint" id="fileStatus" role="status">Fayl ichidagi matn avtomatik ajratilib, quyidagi maydonga joylanadi. Mavjud matn almashtiriladi.</div>
+<textarea id="txt"></textarea>
 <div class="hint"># Sarlavha · x^2 yuqori indeks · H_2O quyi indeks · C_{12}, x^{n+1} — koʻp belgili</div>
 <div class="row">
 <div><label>Ruchka turi</label><select id="pen"><option value="bp">Sharikli ruchka</option><option value="gel">Gel ruchka</option><option value="pen">Oddiy qalam</option></select></div>
@@ -109,6 +124,50 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <footer><div class="w">© 2026 Qoʻlyozma · Hammasi brauzeringizda ishlaydi.</div></footer>
 <script>
 const $=id=>document.getElementById(id);
+const sourceFile=$('sourceFile'),fileStatus=$('fileStatus');
+$('pickFile').addEventListener('click',()=>sourceFile.click());
+sourceFile.addEventListener('change',async()=>{
+ const file=sourceFile.files&&sourceFile.files[0]; if(!file)return;
+ const ext=file.name.toLowerCase().split('.').pop();
+ const sayFile=(message,kind='')=>{fileStatus.textContent=message;fileStatus.className='hint '+kind};
+ if(file.size>30*1024*1024){sayFile('Fayl hajmi 30 MB dan oshmasligi kerak.','error');sourceFile.value='';return}
+ try{
+  sayFile('Fayl oʻqilmoqda…');
+  let extracted='';
+  if(ext==='docx'){
+   if(!window.mammoth)throw new Error('Word modulini yuklab boʻlmadi. Internet aloqasini tekshiring.');
+   const result=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
+   extracted=result.value||'';
+  }else if(ext==='pdf'){
+   if(!window.pdfjsLib)throw new Error('PDF modulini yuklab boʻlmadi. Internet aloqasini tekshiring.');
+   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+   const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+   const pages=[];
+   for(let n=1;n<=pdf.numPages;n++){
+    sayFile('PDF matni ajratilmoqda: '+n+' / '+pdf.numPages+'-sahifa…');
+    const page=await pdf.getPage(n),content=await page.getTextContent();
+    let line='',lastY=null;
+    for(const item of content.items){
+     if(!item.str)continue;
+     const y=item.transform?item.transform[5]:null;
+     if(lastY!==null&&y!==null&&Math.abs(y-lastY)>3){line+='\n'}
+     else if(line&&!line.endsWith(' ')&&!item.str.startsWith(' ')){line+=' '}
+     line+=item.str;lastY=y;
+    }
+    pages.push(line.trim());
+   }
+   extracted=pages.filter(Boolean).join('\n\n');
+   if(!extracted.trim())throw new Error('PDF ichidan matn topilmadi. Bu skanerlangan rasmli PDF boʻlishi mumkin; hozircha matnli PDF yuklang.');
+  }else{
+   throw new Error('Faqat PDF yoki Word DOCX fayl qoʻllab-quvvatlanadi. Eski .doc faylni avval .docx formatida saqlang.');
+  }
+  extracted=extracted.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+  if(!extracted)throw new Error('Faylda oʻqiladigan matn topilmadi.');
+  $('txt').value=extracted;go();
+  sayFile('✓ '+file.name+' — matn ajratildi ('+extracted.length.toLocaleString('uz-UZ')+' belgi). Qoʻlyozma tayyorlanmoqda.','ok');
+ }catch(err){sayFile(err.message||'Faylni oʻqishda xatolik yuz berdi.','error')}
+ sourceFile.value='';
+});
 const SAMPLE=`# Fotosintez
 Fotosintez — oʻsimliklar quyosh nurini kimyoviy energiyaga aylantiradigan jarayon. U xloroplastlarda sodir boʻladi.
 

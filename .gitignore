@@ -2,3 +2,6 @@
 Thumbs.db
 node_modules/
 *.log
+*.keystore
+android/build/
+android/assets/index.html

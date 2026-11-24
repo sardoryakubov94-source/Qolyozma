@@ -1,0 +1,60 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    paths: ['index.html', 'android/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Asboblarni oʻrnatish
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq openjdk-21-jdk-headless aapt apksigner zipalign libandroid-23-java dalvik-exchange
+
+      - name: Veb versiyadan APK sahifasini tayyorlash
+        run: python3 android/prepare_assets.py
+
+      - name: Imzo kaliti
+        env:
+          KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PW: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KS_B64" ] && [ -n "$KS_PW" ]; then
+            echo "$KS_B64" | base64 -d > android/qolyozma-release.keystore
+            echo "PW=$KS_PW" >> "$GITHUB_ENV"
+          else
+            echo "::warning::KEYSTORE_BASE64/KEYSTORE_PASSWORD yoʻq — vaqtinchalik kalit bilan imzolanmoqda (yangilash uchun mos emas)"
+            PW=$(openssl rand -hex 12)
+            keytool -genkeypair -keystore android/qolyozma-release.keystore -storepass "$PW" -keypass "$PW" -alias qolyozma -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Qolyozma, O=Qolyozma, C=UZ"
+            echo "PW=$PW" >> "$GITHUB_ENV"
+          fi
+
+      - name: APK yigʻish
+        working-directory: android
+        run: ./build.sh
+
+      - name: Imzoni tekshirish
+        run: apksigner verify -v android/build/Qolyozma.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Qolyozma-apk
+          path: android/build/Qolyozma.apk
+
+      - name: "Release (latest) yangilash"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest -y --cleanup-tag || true
+          gh release create latest android/build/Qolyozma.apk --target "$GITHUB_SHA" \
+            --title "Qoʻlyozma — soʻnggi APK" \
+            --notes "Avtomatik build. Telefonda oching va oʻrnating (Noma'lum manbalardan oʻrnatishga ruxsat kerak)."

@@ -60,3 +60,11 @@ Bu vosita formatlash va dizayn uchun moʻljallangan. Agar oʻqituvchi yoki tashk
 ## Litsenziya
 
 [MIT](LICENSE)
+
+## Android ilova (APK)
+
+`android/` papkasida WebView asosidagi Android ilova bor. GitHub Actions (`.github/workflows/android.yml`) har safar `index.html` yoki `android/` oʻzgarganda APK’ni avtomatik yigʻadi.
+
+- **Yuklab olish:** [Releases → latest → Qolyozma.apk](../../releases/latest/download/Qolyozma.apk)
+- Imzo kaliti repo Secrets’da saqlanadi: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD` (kalitni repoga yuklamang).
+- Qoʻlda ishga tushirish: **Actions → Android APK → Run workflow**.

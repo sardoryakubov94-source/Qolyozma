@@ -521,17 +521,25 @@ if(!printClean&&pp==='dotted'){x.fillStyle='#b5c3cf';for(let a=lh;a<W;a+=lh/1.5)
 const ic=document.createElement('canvas');ic.width=cv.width;ic.height=cv.height;
 const y=ic.getContext('2d');y.scale(sc,sc);y.textBaseline='alphabetic';y.lineJoin='round';
 const R=rng((Date.now()^Math.floor(Math.random()*0x7fffffff)^(pg*7919))|0),j=o.jit,pro=o.realism==='pro',strength=pro?1:0,tw=o.th*P.t*1.6;
-let tVariantIndex=Math.floor(R()*5);
+let tVariantIndex=Math.floor(R()*5);const lastGlyphForm=new Map();
 lines.slice(pg*per,(pg+1)*per).forEach((ln,k)=>{
 const base=top+(k+1)*lh-Math.round(lh*.14),phase=R()*Math.PI*2,slope=(R()-.5)*j*(pro?12:7),wave=(R()-.5)*j*(pro?2.8:0);
 for(const it of ln.items){let cx=left+it.x+(pro?(R()-.5)*j*1.8:0);
 for(const r of it.w){const fs=ln.fs*(r.m?.62:1);y.font=L.f(fs);const yo=r.m==1?-ln.fs*.38:r.m==2?ln.fs*.2:0;
 for(const ch of r.t){const cw=y.measureText(ch).width,progress=(cx-left)/maxW;
 const jx=(R()-.5)*j*(pro?2.5:1.4),jy=(R()-.5)*j*(pro?4.2:2.6)+Math.sin(progress*8+phase)*wave;
-const rot=(R()-.5)*j*(pro?.22:.14)+(pro?Math.sin(progress*5+phase)*j*.025:0);
-const sz=1+(R()-.5)*j*(pro?.19:.12),pr=.68+R()*(pro?.32:.22),v=Math.round((1-pr)*255);
-const apple=o.font==='Homemade Apple',isAppleT=apple&&ch==='T',form=isAppleT?(tVariantIndex++%5):(apple?Math.floor(R()*5):0);
-const forms=[{sx:.91,sy:1.075,slant:-.075,tilt:-.022},{sx:1.085,sy:.94,slant:.082,tilt:.025},{sx:.96,sy:.975,slant:.035,tilt:-.012},{sx:1.045,sy:1.055,slant:-.035,tilt:.018},{sx:1,sy:1,slant:.012,tilt:-.028}];
+const rot=(R()-.5)*j*(pro?.34:.23)+(pro?Math.sin(progress*5+phase)*j*.04:0);
+const sz=1+(R()-.5)*j*(pro?.25:.17),pr=.68+R()*(pro?.32:.22),v=Math.round((1-pr)*255);
+const apple=o.font==='Homemade Apple',isAppleT=apple&&ch==='T';let form=0;
+if(apple){
+ if(isAppleT){form=tVariantIndex++%5;}
+ else if(/[A-Za-zÀ-ÿ]/.test(ch)){
+  const prev=lastGlyphForm.get(ch);form=Math.floor(R()*4);
+  if(prev!==undefined&&form>=prev)form++;
+  lastGlyphForm.set(ch,form);
+ }else{form=Math.floor(R()*5)}
+}
+const forms=[{sx:.82,sy:1.12,slant:-.145,tilt:-.045},{sx:1.17,sy:.89,slant:.145,tilt:.048},{sx:.91,sy:.94,slant:.105,tilt:-.032},{sx:1.10,sy:1.13,slant:-.105,tilt:.038},{sx:.98,sy:1.02,slant:.018,tilt:-.052}];
 const shape=apple?forms[form]:{sx:1,sy:1,slant:0,tilt:0};
 y.save();y.translate(cx+cw/2+jx,base+yo+jy+(cx-left)/maxW*slope);y.rotate(rot+shape.tilt);y.scale(sz*shape.sx,sz*shape.sy);y.transform(1,0,shape.slant,1,0,0);
 y.globalAlpha=pro?.91+R()*.09:1;

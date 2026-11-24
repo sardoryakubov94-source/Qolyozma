@@ -544,7 +544,7 @@ const shape=apple?forms[form]:{sx:1,sy:1,slant:0,tilt:0};
 y.save();y.translate(cx+cw/2+jx,base+yo+jy+(cx-left)/maxW*slope);y.rotate(rot+shape.tilt);y.scale(sz*shape.sx,sz*shape.sy);y.transform(1,0,shape.slant,1,0,0);
 y.globalAlpha=pro?.91+R()*.09:1;
 y.fillStyle=y.strokeStyle=`rgb(${v},${v},${v})`;y.lineWidth=tw*(pro?.72+R()*.62:.85+R()*.3)+(ln.fs>o.size?.5:0);
-if(apple&&'QWIF SGLZ'.replace(/ /g,'').includes(ch)){
+if(apple&&'QWIFT SGLZ'.replace(/ /g,'').includes(ch)){
  const h=ln.fs*.78,sw=Math.max(ln.fs*.095,y.lineWidth*1.2),widths={Q:1.02,W:1.22,I:.48,F:.78,S:.78,G:1.02,L:.78,Z:.86},w=ln.fs*widths[ch];
  y.save();y.lineCap='round';y.lineJoin='round';y.lineWidth=sw;y.beginPath();
  if(ch==='T'){

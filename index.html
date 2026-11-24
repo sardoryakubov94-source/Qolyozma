@@ -153,7 +153,9 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
   <label class="convert-upload" for="ocrFile"><b>Qoʻlyozma rasmi yoki PDF faylni yuklang</b></label>
   <input id="ocrFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp,application/pdf" hidden>
   <div class="convert-row"><label for="ocrLang">Til</label><select id="ocrLang"><option value="uzb+eng">Oʻzbek va ingliz</option><option value="uzb+eng+rus">Oʻzbek, ingliz va rus</option><option value="rus+eng">Rus va ingliz</option><option value="eng">Ingliz</option></select></div>
-  <div id="ocrStatus" class="convert-status" role="status"></div>
+  <div id="ocrSelectedFile" class="convert-status" role="status">Hozircha fayl tanlanmagan.</div>
+   <button class="b" id="ocrStart" type="button" hidden>Boshlash</button>
+   <div id="ocrStatus" class="convert-status" role="status"></div>
   <label for="ocrResult">Tanilgan matn</label><textarea id="ocrResult" class="ocr-result" placeholder="Tanilgan matn..."></textarea>
   <div class="ocr-export"><button class="b" id="ocrWord" type="button">Word</button><button class="g" id="ocrExcel" type="button">Excel</button><button class="g" id="ocrPdf" type="button">PDF</button></div>
  </div>
@@ -169,7 +171,9 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
   <div class="filemeta"><strong>PDF yoki Word faylni tanlang</strong><span>PDF · DOCX · 30 MB gacha</span></div>
   <button class="g" type="button" id="pickFile">Fayl yuklash</button>
 </div>
-<div class="hint" id="fileStatus" role="status">Fayl ichidagi matn avtomatik ajratilib, quyidagi maydonga joylanadi. Mavjud matn almashtiriladi.</div>
+<div class="hint" id="studioSelectedFile" role="status">Hozircha fayl tanlanmagan.</div>
+ <button class="b" id="studioStart" type="button" hidden>Boshlash</button>
+ <div class="hint" id="fileStatus" role="status">Faylni tanlang, soʻng “Boshlash” tugmasini bosing. Mavjud matn almashtiriladi.</div>
 <textarea id="txt"></textarea>
 <div class="hint"># Sarlavha · x^2 yuqori indeks · H_2O quyi indeks · C_{12}, x^{n+1} — koʻp belgili</div>
 <div id="msg" role="status"></div>
@@ -263,11 +267,10 @@ settingsButton.addEventListener('click',()=>{
 });
 const sourceFile=$('sourceFile'),fileStatus=$('fileStatus');
 $('pickFile').addEventListener('click',()=>sourceFile.click());
-sourceFile.addEventListener('change',async()=>{
- const file=sourceFile.files&&sourceFile.files[0]; if(!file)return;
+async function processStudioFile(file){
  const ext=file.name.toLowerCase().split('.').pop();
  const sayFile=(message,kind='')=>{fileStatus.textContent=message;fileStatus.className='hint '+kind};
- if(file.size>30*1024*1024){sayFile('Fayl hajmi 30 MB dan oshmasligi kerak.','error');sourceFile.value='';return}
+ if(file.size>30*1024*1024){sayFile('Fayl hajmi 30 MB dan oshmasligi kerak.','error');return}
  try{
   sayFile('Fayl oʻqilmoqda…');
   let extracted='';
@@ -311,7 +314,19 @@ sourceFile.addEventListener('change',async()=>{
   $('txt').value=extracted;go();
   sayFile('✓ '+file.name+' — matn ajratildi ('+extracted.length.toLocaleString('uz-UZ')+' belgi). Qoʻlyozma tayyorlanmoqda.','ok');
  }catch(err){sayFile(err.message||'Faylni oʻqishda xatolik yuz berdi.','error')}
- sourceFile.value='';
+}
+sourceFile.addEventListener('change',()=>{
+ const file=sourceFile.files&&sourceFile.files[0];if(!file)return;
+ $('studioSelectedFile').textContent='Tanlangan fayl: '+file.name;
+ $('studioStart').hidden=false;
+ fileStatus.textContent='Fayl tanlandi. Ishni boshlash uchun “Boshlash” tugmasini bosing.';
+ fileStatus.className='hint';
+});
+$('studioStart').addEventListener('click',async()=>{
+ const file=sourceFile.files&&sourceFile.files[0];if(!file)return;
+ $('studioStart').disabled=true;
+ await processStudioFile(file);
+ $('studioStart').disabled=false;
 });
 const SAMPLE=`# Fotosintez
 Fotosintez — oʻsimliklar quyosh nurini kimyoviy energiyaga aylantiradigan jarayon. U xloroplastlarda sodir boʻladi.
@@ -359,7 +374,19 @@ async function ocrFile(file){
   result.value=textOut;report('✓ '+images.length+' sahifa tekshirildi. Matnni tahrirlab, kerakli formatda saqlang.','ok');
  }catch(e){report(e.message||'OCR jarayonida xatolik yuz berdi.','error')}
 }
-$('ocrFile').addEventListener('change',async()=>{const f=$('ocrFile').files&&$('ocrFile').files[0];if(f)await ocrFile(f);$('ocrFile').value=''});
+$('ocrFile').addEventListener('change',()=>{
+ const f=$('ocrFile').files&&$('ocrFile').files[0];if(!f)return;
+ $('ocrSelectedFile').textContent='Tanlangan fayl: '+f.name;
+ $('ocrStart').hidden=false;
+ $('ocrStatus').textContent='Fayl tanlandi. OCRni boshlash uchun “Boshlash” tugmasini bosing.';
+ $('ocrStatus').className='convert-status';
+});
+$('ocrStart').addEventListener('click',async()=>{
+ const f=$('ocrFile').files&&$('ocrFile').files[0];if(!f)return;
+ $('ocrStart').disabled=true;
+ await ocrFile(f);
+ $('ocrStart').disabled=false;
+});
 function getOcrText(){const t=$('ocrResult').value.trim();if(!t){$('ocrStatus').textContent='Avval rasm yoki PDF yuklab matnni taniting.';return null}return t}
 $('ocrWord').addEventListener('click',async()=>{
  const textOut=getOcrText();if(!textOut)return;

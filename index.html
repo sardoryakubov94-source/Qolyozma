@@ -33,7 +33,7 @@ section{padding:46px 0;border-top:1px solid var(--line)}
 .num{color:var(--acc);font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
 .grid{display:grid;gap:16px;grid-template-columns:1fr}
 /* Studio layout: input, live preview and settings stay easy to reach */
-.export-footer{margin:14px 0 4px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);text-align:center}.export-footer #pdf{width:100%;max-width:420px;min-height:48px}.export-footer .hint{margin:9px 0 0}.studio-grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);grid-template-areas:"input preview" "settings preview";align-items:start;gap:16px}
+.studio-grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);grid-template-areas:"input preview" "settings preview";align-items:start;gap:16px}
 .studio-grid>.ctl{grid-area:input;min-width:0}
 .studio-grid>.settings-card{grid-area:settings;min-width:0}
 .studio-grid>#pages{grid-area:preview;min-width:0;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;padding-right:3px}
@@ -187,7 +187,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 </div>
 
 <div id="pages" aria-live="polite"></div>
-<div class="export-footer"><button class="b" id="pdf">Barcha tayyor sahifalarni PDF yuklab olish</button><p class="hint">PNG va JPEG formatlari har bir tayyor sahifaning tagida alohida joylashgan.</p></div>
+
 </div></div></section>
 
 <section><div class="w"><div class="num">02 — Nima uchun Qoʻlyozma</div><h2>Shrift emas, <em>siyoh izi.</em></h2>
@@ -411,7 +411,8 @@ for(let pg=0;pg<L.n;pg++){
 const cv=drawPage(L,pg,1.5),w=document.createElement('div');w.className='pg';w.appendChild(cv);
 const cap=document.createElement('div');cap.className='cap';cap.innerHTML=`<span>${pg+1} / ${L.n}-sahifa</span>`;
 const pngBtn=document.createElement('button');pngBtn.className='g';pngBtn.textContent='PNG';pngBtn.title='Sahifani PNG formatida saqlash';pngBtn.onclick=()=>saveImage(pg,'png');cap.appendChild(pngBtn);
-const jpgBtn=document.createElement('button');jpgBtn.className='g';jpgBtn.textContent='JPEG';jpgBtn.title='Sahifani JPEG formatida saqlash';jpgBtn.onclick=()=>saveImage(pg,'jpeg');cap.appendChild(jpgBtn);w.appendChild(cap);box.appendChild(w);
+const jpgBtn=document.createElement('button');jpgBtn.className='g';jpgBtn.textContent='JPEG';jpgBtn.title='Sahifani JPEG formatida saqlash';jpgBtn.onclick=()=>saveImage(pg,'jpeg');cap.appendChild(jpgBtn);
+const pdfBtn=document.createElement('button');pdfBtn.className='g';pdfBtn.textContent='PDF';pdfBtn.title='Faqat shu sahifani PDF formatida saqlash';pdfBtn.onclick=()=>savePdf(pg);cap.appendChild(pdfBtn);w.appendChild(cap);box.appendChild(w);
 if(pg%2==1)await new Promise(r=>setTimeout(r,0));if(my!==tok)return}}
 async function hero(){
 const o={font:'Caveat',paper:'ruled',page:'a5',size:24,ls:1.6,jit:.5,margin:50,th:.55,rough:.6,pen:'bp',fin:'clean',ink:INKS[0],ink2:dark(INKS[0]),mix:.4,text:'# Salom!\nBu sahifa kompyuterda yozilgan, lekin xuddi sharikli ruchka bilan qoʻlda yozilgandek koʻrinadi.\n\nE_k = mv^2/2'};
@@ -425,12 +426,15 @@ try{
  const b=await new Promise((resolve,reject)=>c.toBlob(blob=>blob?resolve(blob):reject(new Error('Rasm yaratilmadi')),mime,format==='jpeg'?.94:undefined));
  await dl.save({filename:`qolyozma-${pg+1}.${ext}`,data:b});say(format.toUpperCase()+' formatida saqlandi ✓');
 }catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'Faylni saqlab boʻlmadi. Qayta urinib koʻring.')}}
-$('pdf').onclick=async()=>{if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');
+async function savePdf(pg=null){if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');
 if(!window.jspdf)return say('PDF kutubxonasi yuklanmadi — internetni tekshiring.');
-const [W,H]=DIM[L.o.page],sc=+$('dpi').value;try{const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});
-const printClean=$('printClean').checked;for(let i=0;i<L.n;i++){say(`PDF tayyorlanmoqda: ${i+1} / ${L.n}…`);await new Promise(r=>setTimeout(r,20));if(i)doc.addPage([W,H],'portrait');doc.addImage(drawPage(L,i,sc,printClean).toDataURL('image/jpeg',.98),'JPEG',0,0,W,H)}
-await dl.save({filename:'qolyozma.pdf',data:doc.output('blob')});say('Saqlandi ✓')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'PDF saqlab boʻlmadi. 200 DPI ni sinab koʻring.')}};
-let t;function go(){clearTimeout(t);t=setTimeout(render,250)}
+const [W,H]=DIM[L.o.page],sc=+$('dpi').value;try{
+const pages=pg===null?Array.from({length:L.n},(_,i)=>i):[pg];
+const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});
+const printClean=$('printClean').checked;
+for(let k=0;k<pages.length;k++){const i=pages[k];say(`PDF tayyorlanmoqda: ${k+1} / ${pages.length}…`);await new Promise(r=>setTimeout(r,20));if(k)doc.addPage([W,H],'portrait');doc.addImage(drawPage(L,i,sc,printClean).toDataURL('image/jpeg',.98),'JPEG',0,0,W,H)}
+await dl.save({filename:pg===null?'qolyozma.pdf':`qolyozma-${pg+1}.pdf`,data:doc.output('blob')});say('PDF saqlandi ✓')
+}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'PDF saqlab boʻlmadi. 200 DPI ni sinab koʻring.')}}let t;function go(){clearTimeout(t);t=setTimeout(render,250)}
 [['th','v1'],['rough','v2'],['size','v3'],['ls','v4'],['jit','v5'],['margin','v6'],['pd','v7'],['mx','v8']].forEach(([a,b])=>$(a).addEventListener('input',()=>{$(b).textContent=$(a).value}));
 ['txt','font','realism','paper','page','fin','pen','th','rough','size','ls','jit','margin','pd','bw','mx'].forEach(i=>$(i).addEventListener('input',go));
 document.fonts&&document.fonts.ready.then(()=>{go();hero()});go();hero();

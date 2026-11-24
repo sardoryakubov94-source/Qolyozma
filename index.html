@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Qoʻlyozma — matnni haqiqiy qoʻlyozmaga aylantiring</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%9C%8D%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#0a0a0d">
+<meta name="description" content="Matn va ilmiy maqolalarni sharikli ruchkada yozilgandek qiling. Printerda chiqarilganda ham haqiqiy qoʻlyozma. Bepul, roʻyxatdan oʻtmasdan.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#0a0a0d;--bg2:#121217;--card:#16161c;--fg:#f1f0ec;--mut:#8f8f9a;--line:#26262e;--acc:#ffb86b;--accfg:#1a1206;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f7f5ef;--bg2:#efece3;--card:#fff;--fg:#17171a;--mut:#6a6a72;--line:#e0ddd2;--acc:#c2570c;--accfg:#fff}}
+:root[data-theme="dark"]{--bg:#0a0a0d}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:1120px;margin:0 auto;padding:0 18px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+.logo{font:italic 24px "Instrument Serif",serif}.logo b{font-style:normal;color:var(--acc)}
+a.cta,button.b{background:var(--acc);color:var(--accfg);border:0;border-radius:99px;padding:11px 20px;font:600 15px inherit;font-family:inherit;text-decoration:none;cursor:pointer;display:inline-block}
+button.g{background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:99px;padding:10px 16px;font:inherit;cursor:pointer}
+h1,h2{font:400 clamp(34px,6vw,64px)/1.05 "Instrument Serif",serif;letter-spacing:-.02em;margin:0 0 14px}
+h2{font-size:clamp(28px,4vw,42px)}em{color:var(--acc)}
+.hero{display:grid;gap:30px;padding:30px 0 50px;align-items:center}
+@media(min-width:880px){.hero{grid-template-columns:1.1fr .9fr}}
+.hero p{color:var(--mut);font-size:18px;max-width:520px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.badges span{border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:13px;color:var(--mut)}
+#hc{width:100%;height:auto;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.45);transform:rotate(1.5deg);background:#fff}
+section{padding:46px 0;border-top:1px solid var(--line)}
+.num{color:var(--acc);font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:960px){.grid{grid-template-columns:390px 1fr;align-items:start}.ctl{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+label{display:block;font-size:12px;color:var(--mut);margin:11px 0 4px}
+textarea,select{width:100%;background:var(--bg2);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:9px;font:inherit;font-size:15px}
+textarea{min-height:200px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.inks{display:flex;gap:9px}.inks button{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);cursor:pointer}.inks .on{outline:2px solid var(--fg);outline-offset:2px}
+.hint{font-size:12px;color:var(--mut);margin-top:6px}.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#pages{display:flex;flex-direction:column;gap:16px}.pg{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}
+.pg canvas{width:100%;height:auto;display:block;border-radius:4px;background:#fff}
+.cap{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;color:var(--mut)}
+#msg{font-size:13px;color:var(--mut);margin-top:10px;min-height:18px}
+.f3{display:grid;gap:14px;grid-template-columns:1fr}@media(min-width:760px){.f3{grid-template-columns:repeat(3,1fr)}}
+.f3 .card h3{margin:0 0 6px;font-size:17px}.f3 .card p{margin:0;color:var(--mut);font-size:14.5px}
+details{border-bottom:1px solid var(--line);padding:14px 0}summary{cursor:pointer;font-weight:600}details p{color:var(--mut);margin:8px 0 0}
+footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);font-size:14px}
+</style>
+</head>
+<body>
+<div class="w">
+<nav><div class="logo">Qoʻl<b>yozma</b></div><a class="cta" href="#studio">Boshlash</a></nav>
+<div class="hero"><div>
+<div class="badges"><span>Bepul</span><span>Roʻyxatdan oʻtmasdan</span><span>Maxfiy: serverga yuklanmaydi</span></div>
+<h1>Matn emas — <em>haqiqiy</em> qoʻlyozma.</h1>
+<p>Matn yoki ilmiy maqolangizni qoʻying. Har bir harf alohida, sharikli ruchka izi bilan chiziladi: notekis qirralar, bosim farqi, siyoh quyuqligi. Printerdan chiqqanda ham qoʻlda yozilgandek.</p>
+<p><a class="cta" href="#studio">Matnni oʻgirish</a></p></div>
+<canvas id="hc"></canvas></div></div>
+
+<section id="studio"><div class="w">
+<div class="num">01 — Studiya</div><h2>Ruchkani tanlang. <em>Qogʻozni</em> tanlang.</h2>
+<div class="grid">
+<div class="card ctl">
+<label for="txt">Matningiz</label><textarea id="txt"></textarea>
+<div class="hint"># Sarlavha · x^2 yuqori indeks · H_2O quyi indeks · C_{12}, x^{n+1} — koʻp belgili</div>
+<div class="row">
+<div><label>Ruchka turi</label><select id="pen"><option value="bp">Sharikli ruchka</option><option value="gel">Gel ruchka</option><option value="pen">Oddiy qalam</option></select></div>
+<div><label>Yozuv uslubi (<span id="nf">0</span> xil)</label><select id="font"></select></div>
+<div><label>Qogʻoz</label><select id="paper"><option value="ruled">Chiziqli</option><option value="notebook">Daftar</option><option value="grid">Katakli</option><option value="dotted">Nuqtali</option><option value="plain">Oq varaq</option></select></div>
+<div><label>Oʻlcham</label><select id="page"><option value="a4">A4</option><option value="a5">A5</option><option value="letter">Letter</option></select></div>
+</div>
+<label>Siyoh rangi</label><div class="inks" id="inks"></div>
+<div class="row"><div><label>Oʻzingizning rangingiz</label><input type="color" id="cp" value="#1832aa" style="width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)"></div>
+<div><label>Printer tuzatish: <span id="v7">0</span>%</label><input type="range" id="pd" min="-50" max="50" value="0"></div></div>
+<div class="row"><div><label>Aralash rang (ikkinchi ton)</label><input type="color" id="cp2" value="#0b174d" style="width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--bg2)"></div>
+<div><label>Aralashish: <span id="v8">40</span>%</label><input type="range" id="mx" min="0" max="100" value="40"></div></div>
+<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="bw"> Qora-oq printer (rang kulrangga aylanadi)</label>
+<div class="hint">Printerlar rangni oʻzgartiradi (RGB→CMYK): koʻk siyoh binafsha yoki och chiqishi mumkin. Avval “Sinov varagʻi”ni chop eting, eng yaxshi chiqqan qatorga qarab tuzatishni tanlang. Qora siyoh uchun printer sozlamasida “Grayscale” ni yoqing.
+<label>Ruchka uchi yoʻgʻonligi: <span id="v1">55</span>%</label><input type="range" id="th" min="0" max="140" value="55">
+<label>Qirralar notekisligi: <span id="v2">60</span>%</label><input type="range" id="rough" min="0" max="100" value="60">
+<label>Harf oʻlchami: <span id="v3">26</span></label><input type="range" id="size" min="18" max="40" value="26">
+<label>Qator oraligʻi: <span id="v4">1.6</span></label><input type="range" id="ls" min="1.2" max="2.2" step=".05" value="1.6">
+<label>Tabiiylik (qiyshiqlik): <span id="v5">55</span>%</label><input type="range" id="jit" min="0" max="100" value="55">
+<label>Chap hoshiya: <span id="v6">60</span></label><input type="range" id="margin" min="30" max="120" value="60">
+<div class="row"><div><label>Koʻrinish</label><select id="fin"><option value="clean">Toza (printer uchun)</option><option value="scan">Skaner qilingan</option></select></div>
+<div><label>PDF sifati</label><select id="dpi"><option value="3.125">300 DPI (printer)</option><option value="2.083">200 DPI</option><option value="1.5">Yengil (ekran)</option></select></div></div>
+<div class="btns"><button class="b" id="pdf">PDF yuklab olish</button><button class="g" id="sample">Namuna</button><button class="g" id="clear">Tozalash</button><button class="g" id="test">Sinov varagʻi</button></div>
+<div id="msg"></div></div>
+<div id="pages"></div></div></div></section>
+
+<section><div class="w"><div class="num">02 — Nima uchun Qoʻlyozma</div><h2>Shrift emas, <em>siyoh izi.</em></h2>
+<div class="f3">
+<div class="card"><h3>Sharikli ruchka effekti</h3><p>Chiziq qirralari tekis emas, siyoh chetlarda quyuqlashadi, ruchka sharchasi ayrim joylarda siyohni oʻtkazmaydi — xuddi haqiqiy ruchkadagidek.</p></div>
+<div class="card"><h3>Printer uchun 300 DPI</h3><p>PDF haqiqiy sahifa oʻlchamida (A4 210×297 mm) va yuqori aniqlikda chiqadi. Printerda 100% masshtabda chop eting.</p></div>
+<div class="card"><h3>Ilmiy maqolalar</h3><p>Sarlavhalar, yuqori va quyi indekslar: E_k = mv^2/2, H_2O, C_6H_{12}O_6 kabi formulalar qoʻlda yozilgandek chiqadi.</p></div>
+<div class="card"><h3>Har bir harf alohida</h3><p>Egilish, balandlik, oraliq va bosim har harfda har xil. Takrorlanuvchi bir xil harflar yoʻq — shrift ekani bilinmaydi.</p></div>
+<div class="card"><h3>Maxfiy</h3><p>Hammasi sizning brauzeringizda bajariladi. Matn hech qanday serverga yuborilmaydi.</p></div>
+<div class="card"><h3>Qogʻoz va ruchka</h3><p>Chiziqli, daftar, katakli, nuqtali qogʻoz; sharikli, gel ruchka yoki qalam; 4 xil siyoh rangi.</p></div></div></div></section>
+
+<section><div class="w"><div class="num">03 — Savollar</div><h2>Koʻp <em>beriladigan</em> savollar</h2>
+<details><summary>Printerda chiqarganda yaxshi koʻrinishi uchun nima qilish kerak?</summary><p>"Toza" koʻrinish va 300 DPI ni tanlang, PDF ni 100% masshtabda ("Actual size") chop eting. Rangli printerda koʻk siyoh tabiiyroq chiqadi. Mat yoki oddiy ofis qogʻozi eng yaxshi natija beradi.</p></details>
+<details><summary>Matn serverga yuboriladimi?</summary><p>Yoʻq. Yozuv chizish va PDF yaratish toʻliq sizning qurilmangizda boʻladi.</p></details>
+<details><summary>Kirill va lotin harflari ishlaydimi?</summary><p>Ha, oʻzbek lotin va kirill yozuvi, shuningdek ruscha matnlar qoʻllab-quvvatlanadi.</p></details>
+<details><summary>Telefonda ishlaydimi?</summary><p>Ha. 300 DPI PDF telefonda biroz vaqt olishi mumkin; sekin boʻlsa, 200 DPI tanlang.</p></details>
+<details><summary>Topshiriqlar uchun ishlatish mumkinmi?</summary><p>Agar qoʻlda yozish talab qilinsa (oʻqituvchi yozganingizni tekshirishni istasa), bu vosita oʻrniga oʻzingiz yozing. Formatlash uchun boʻlsa, odatda muammo yoʻq — baribir oʻqituvchingizdan soʻrang.</p></details>
+</div></section>
+<footer><div class="w">© 2026 Qoʻlyozma · Hammasi brauzeringizda ishlaydi.</div></footer>
+<script>
+const $=id=>document.getElementById(id);
+const SAMPLE=`# Fotosintez
+Fotosintez — oʻsimliklar quyosh nurini kimyoviy energiyaga aylantiradigan jarayon. U xloroplastlarda sodir boʻladi.
+
+Umumiy tenglama:
+6CO_2 + 6H_2O → C_6H_{12}O_6 + 6O_2
+
+## Fizikadan misol
+Kinetik energiya E_k = mv^2/2 formula bilan topiladi. Massasi m = 2 kg, tezligi v = 3 m/s boʻlsa, E_k = 9 J.
+
+Xulosa: yorugʻlik, suv va karbonat angidrid fotosintezning asosiy shartlaridir.`;
+$('txt').value=SAMPLE;
+const INKS=[[24,50,170],[10,20,90],[18,18,22],[10,90,60],[170,28,40],[110,40,150]];let ink=INKS[0];
+const dark=c=>c.map(v=>Math.round(v*.45)),hex=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');let ink2=dark(ink);
+$('cp2').addEventListener('input',e=>{const h=e.target.value;ink2=[1,3,5].map(i=>parseInt(h.substr(i,2),16));go()});
+const adj=(c,p=+$('pd').value)=>{const d=p/100;let r=c.map(v=>d>0?v*(1-d*.6):v+(255-v)*-d*.6);if($('bw').checked){const g=.3*r[0]+.59*r[1]+.11*r[2];r=[g,g,g]}return r.map(Math.round)};
+$('cp').addEventListener('input',e=>{const h=e.target.value;ink=[1,3,5].map(i=>parseInt(h.substr(i,2),16));ink2=dark(ink);$('cp2').value=hex(ink2);[...$('inks').children].forEach(x=>x.classList.remove('on'));go()});
+INKS.forEach((c,i)=>{const b=document.createElement('button');b.style.background=`rgb(${c})`;if(!i)b.className='on';b.onclick=()=>{ink=c;ink2=dark(c);$('cp').value=hex(c);$('cp2').value=hex(ink2);[...$('inks').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');go()};$('inks').appendChild(b)});
+const FG={'Kirill + lotin (· kir)':['Caveat','Marck Script','Bad Script','Neucha','Pangolin','Marmelad','Underdog','Amatic SC','Pacifico','Lobster Two'],
+'Real qoʻlyozma uslublari (lotin)':['Reenie Beanie','Covered By Your Grace','Nothing You Could Do','Waiting for the Sunrise','Zeyada','Over the Rainbow','Cedarville Cursive','La Belle Aurore','Loved by the King','Annie Use Your Telescope','Gloria Hallelujah','Schoolbell','Coming Soon','Just Another Hand','Sue Ellen Francisco','Mansalva','Give You Glory','Swanky and Moo Moo','Shadows Into Light','Indie Flower','Patrick Hand','Handlee','Architects Daughter','Kalam','Walter Turncoat','Gochi Hand','Delicious Handrawn','Shantell Sans'],
+'Kursiv / bezakli (lotin)':['Dancing Script','Satisfy','Sacramento','Homemade Apple'],
+'Marker / qalin (lotin)':['Permanent Marker','Rock Salt','Caveat Brush','Short Stack','Nanum Pen Script']};
+const CY=new Set(FG['Kirill + lotin (· kir)']);
+Object.entries(FG).forEach(([g,a])=>{const og=document.createElement('optgroup');og.label=g;a.forEach(n=>og.appendChild(new Option(n+(CY.has(n)?' · kir':''),n)));$('font').appendChild(og)});
+$('nf').textContent=$('font').options.length;
+const FL={};function loadFont(n){return FL[n]||(FL[n]=new Promise(res=>{const l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family='+n.replace(/ /g,'+')+'&display=swap';l.onload=l.onerror=()=>res();document.head.appendChild(l)}))}
+// pen presets: blur, rough, skip, pool, alpha, thickness(css px)
+const PEN={bp:{b:.5,k:1,s:.55,p:.3,a:.95,t:.5},gel:{b:.55,k:.45,s:.12,p:.12,a:1,t:.75},pen:{b:.9,k:1.2,s:.9,p:0,a:.8,t:.7,c:[70,70,76]}};
+const DIM={a4:[794,1123],a5:[559,794],letter:[816,1056]};
+function runs(w){const o=[],re=/\^(\{[^}]*\}|[+-]?\d+|[A-Za-z])|_(\{[^}]*\}|[+-]?\d+|[A-Za-z])/g;let i=0,m;
+while((m=re.exec(w))){if(m.index>i)o.push({t:w.slice(i,m.index),m:0});o.push({t:(m[1]||m[2]).replace(/^\{|\}$/g,''),m:m[1]?1:2});i=re.lastIndex}
+if(i<w.length)o.push({t:w.slice(i),m:0});return o}
+const parse=t=>t.replace(/[\u02bb\u02bc\u2018\u2019]/g,"'").replace(/\r/g,'').split('\n').map(l=>{let h=0;const m=l.match(/^(#{1,3})\s+(.*)$/);if(m){h=m[1].length;l=m[2]}return{h,words:l.split(/\s+/).filter(Boolean).map(runs)}});
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+// noise tiles
+function tile(seed,pass){const R=rng(seed),N=256,a=new Float32Array(N*N);for(let i=0;i<a.length;i++)a[i]=R();
+for(let p=0;p<pass;p++){const b=new Float32Array(N*N);for(let y=0;y<N;y++)for(let x=0;x<N;x++){let s=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)s+=a[((y+dy)&255)*N+((x+dx)&255)];b[y*N+x]=s/9}a.set(b)}
+let lo=1,hi=0;for(const v of a){if(v<lo)lo=v;if(v>hi)hi=v}for(let i=0;i<a.length;i++)a[i]=(a[i]-lo)/(hi-lo);return a}
+const T1=tile(11,1),T2=tile(29,2);
+function bl(s,t,w,h,r,H){const L=H?w:h,M=H?h:w,st=H?1:w,ms=H?w:1,k=2*r+1;for(let m=0;m<M;m++){const o=m*ms;let sum=0;for(let i=0;i<r&&i<L;i++)sum+=s[o+i*st];for(let i=0;i<L;i++){const ad=i+r,rm=i-r-1;if(ad<L)sum+=s[o+ad*st];if(rm>=0)sum-=s[o+rm*st];t[o+i*st]=sum/k}}}
+const sst=(a,b,x)=>{x=(x-a)/(b-a);x=x<0?0:x>1?1:x;return x*x*(3-2*x)};
+// converts black text mask into ballpoint-like ink
+function inkify(c,sc,P,col,rough,c2,mx){c2=c2||col;mx=mx||0;
+const w=c.width,h=c.height,cx=c.getContext('2d'),id=cx.getImageData(0,0,w,h),d=id.data,n=w*h;
+let a=new Uint8Array(n),b=new Uint8Array(n);for(let i=0;i<n;i++)a[i]=d[i*4+3];
+const r=Math.max(1,Math.round(P.b*sc));bl(a,b,w,h,r,true);bl(b,a,w,h,r,false);
+const f=sc*2,rg=rough*P.k,c0=P.c||col;
+for(let i=0,y=0;y<h;y++)for(let x=0;x<w;x++,i++){
+const B=a[i]/255,o=i*4;if(B<.03){d[o+3]=0;continue}
+const had=d[o+3]>0,pr=had?Math.max(.55,1-d[o]/300):.9;
+const n1=T1[(((y*f/sc)|0)&255)*256+(((x*f/sc)|0)&255)],n2=T2[((((y*f/sc)|0)+53)&255)*256+((((x*f/sc)|0)+97)&255)];
+const t=.5+(n1-.5)*rg,v=sst(t-.22,t+.22,B);
+if(v<.01){d[o+3]=0;continue}
+const edge=1-Math.min(1,Math.abs(B-.5)*3),sk=P.s*sst(.5,.92,n2);
+let dn=pr*(1-sk)+P.p*edge;dn=Math.min(1,dn*P.a);
+const dk=1-.35*P.p*edge*2;
+const n3=T2[((((y*f/sc)|0)+171)&255)*256+((((x*f/sc)|0)+11)&255)],mm=P.c?0:Math.min(1,mx*(.25+1.5*sst(.25,.8,n3)));d[o]=(c0[0]+(c2[0]-c0[0])*mm)*dk;d[o+1]=(c0[1]+(c2[1]-c0[1])*mm)*dk;d[o+2]=(c0[2]+(c2[2]-c0[2])*mm)*dk;d[o+3]=255*v*dn}
+cx.putImageData(id,0,0)}
+let L=null,tok=0;
+function opts(){return{font:$('font').value,paper:$('paper').value,page:$('page').value,size:+$('size').value,ls:+$('ls').value,jit:+$('jit').value/100,margin:+$('margin').value,th:+$('th').value/100,rough:+$('rough').value/100,pen:$('pen').value,fin:$('fin').value,ink:adj(ink),ink2:adj(ink2),mix:+$('mx').value/100,text:$('txt').value}}
+function layout(o){
+const [W,H]=DIM[o.page],lh=Math.round(o.size*o.ls),left=o.margin,right=36,top=56,bottom=44,maxW=W-left-right,fam=`"${o.font}",cursive`,f=p=>`${p}px ${fam}`,mc=document.createElement('canvas').getContext('2d');
+const wW=(w,fs)=>{let s=0;for(const r of w){mc.font=f(fs*(r.m?.62:1));for(const c of r.t)s+=mc.measureText(c).width}return s};
+const lines=[];
+for(const p of parse(o.text)){const fs=o.size*(p.h?[0,1.35,1.2,1.1][p.h]:1);
+if(!p.words.length){lines.push({items:[],h:0,fs});continue}
+let cur=[],cw=0;const sp=fs*.3;
+for(const w of p.words){const ww=wW(w,fs),x=cur.length?cw+sp:0;if(cur.length&&x+ww>maxW){lines.push({items:cur,h:p.h,fs});cur=[];cw=0}
+const x2=cur.length?cw+sp:0;cur.push({w,x:x2});cw=x2+ww}
+if(cur.length)lines.push({items:cur,h:p.h,fs})}
+const per=Math.max(1,Math.floor((H-top-bottom)/lh));
+return{o,W,H,lh,left,top,maxW,f,lines,per,n:Math.max(1,Math.ceil(lines.length/per))}}
+function drawPage(L,pg,sc){
+const {o,W,H,lh,left,top,maxW,f,lines,per}=L,P=PEN[o.pen];
+const cv=document.createElement('canvas');cv.width=Math.round(W*sc);cv.height=Math.round(H*sc);
+const x=cv.getContext('2d');x.scale(sc,sc);x.fillStyle='#fdfcf8';x.fillRect(0,0,W,H);x.lineWidth=1;
+const pp=o.paper;
+if(pp==='ruled'||pp==='notebook'){x.strokeStyle='#b9d0e6';for(let k=1;k<=per;k++){const y=top+k*lh+.5;x.beginPath();x.moveTo(0,y);x.lineTo(W,y);x.stroke()}
+if(pp==='notebook'){x.strokeStyle='#e58a8a';x.beginPath();x.moveTo(left-14,0);x.lineTo(left-14,H);x.stroke()}}
+if(pp==='grid'){x.strokeStyle='#cfe0ea';const g=Math.round(lh/2);for(let a=0;a<W;a+=g){x.beginPath();x.moveTo(a+.5,0);x.lineTo(a+.5,H);x.stroke()}for(let b=0;b<H;b+=g){x.beginPath();x.moveTo(0,b+.5);x.lineTo(W,b+.5);x.stroke()}}
+if(pp==='dotted'){x.fillStyle='#b5c3cf';for(let a=lh;a<W;a+=lh/1.5)for(let b=top;b<H;b+=lh/1.5)x.fillRect(a,b,1.6,1.6)}
+const ic=document.createElement('canvas');ic.width=cv.width;ic.height=cv.height;
+const y=ic.getContext('2d');y.scale(sc,sc);y.textBaseline='alphabetic';y.lineJoin='round';
+const R=rng(1337+pg*7919),j=o.jit,tw=o.th*P.t*1.6;
+lines.slice(pg*per,(pg+1)*per).forEach((ln,k)=>{
+const base=top+(k+1)*lh-Math.round(lh*.14),slope=(R()-.5)*j*7;
+for(const it of ln.items){let cx=left+it.x;
+for(const r of it.w){const fs=ln.fs*(r.m?.62:1);y.font=L.f(fs);const yo=r.m==1?-ln.fs*.38:r.m==2?ln.fs*.2:0;
+for(const ch of r.t){const cw=y.measureText(ch).width,jx=(R()-.5)*j*1.4,jy=(R()-.5)*j*2.6,rot=(R()-.5)*j*.14,sz=1+(R()-.5)*j*.12,pr=.78+R()*.22,v=Math.round((1-pr)*255);
+y.save();y.translate(cx+cw/2+jx,base+yo+jy+(cx-left)/maxW*slope);y.rotate(rot);y.scale(sz,sz);
+y.fillStyle=y.strokeStyle=`rgb(${v},${v},${v})`;y.lineWidth=tw*(.85+R()*.3)+(ln.fs>o.size?.5:0);
+y.fillText(ch,-cw/2,0);if(y.lineWidth>.05)y.strokeText(ch,-cw/2,0);y.restore();cx+=cw+(R()-.35)*j*.9}}}});
+inkify(ic,sc,P,o.ink,o.rough,o.ink2,o.mix);
+x.setTransform(1,0,0,1,0,0);x.drawImage(ic,0,0);
+if(o.fin==='scan'){x.fillStyle='rgba(110,110,115,.07)';x.fillRect(0,0,cv.width,cv.height);
+const g=x.createRadialGradient(cv.width/2,cv.height/2,cv.width*.4,cv.width/2,cv.height/2,cv.height*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.2)');x.fillStyle=g;x.fillRect(0,0,cv.width,cv.height);
+for(let d=0;d<900;d++){x.fillStyle=`rgba(0,0,0,${R()*.08})`;x.fillRect(R()*cv.width,R()*cv.height,R()*2*sc+.5,R()*2*sc+.5)}}
+return cv}
+async function render(){
+const my=++tok,o=opts();await loadFont(o.font);if(/[\u0400-\u04FF]/.test(o.text)&&!CY.has(o.font))say('Bu shriftda kirill harflari yoʻq. Kirill uchun “kir” belgili shriftni tanlang.');
+try{await document.fonts.load(`${o.size}px "${o.font}"`,'Abвг')}catch(e){}
+if(my!==tok)return;
+L=layout(o);const box=$('pages');box.innerHTML='';
+for(let pg=0;pg<L.n;pg++){
+const cv=drawPage(L,pg,1.5),w=document.createElement('div');w.className='pg';w.appendChild(cv);
+const cap=document.createElement('div');cap.className='cap';cap.innerHTML=`<span>${pg+1} / ${L.n}-sahifa</span>`;
+const bt=document.createElement('button');bt.className='g';bt.textContent='PNG saqlash';bt.onclick=()=>savePng(pg);cap.appendChild(bt);w.appendChild(cap);box.appendChild(w);
+if(pg%2==1)await new Promise(r=>setTimeout(r,0));if(my!==tok)return}}
+async function hero(){
+const o={font:'Caveat',paper:'ruled',page:'a5',size:24,ls:1.6,jit:.5,margin:50,th:.55,rough:.6,pen:'bp',fin:'clean',ink:INKS[0],ink2:dark(INKS[0]),mix:.4,text:'# Salom!\nBu sahifa kompyuterda yozilgan, lekin xuddi sharikli ruchka bilan qoʻlda yozilgandek koʻrinadi.\n\nE_k = mv^2/2'};
+await loadFont('Caveat');try{await document.fonts.load('24px "Caveat"','Abв')}catch(e){}
+const Lh=layout(o),c=drawPage(Lh,0,1.5),h=$('hc');h.width=c.width;h.height=c.height;h.getContext('2d').drawImage(c,0,0)}
+const dl={save:async({filename,data})=>{const b=data instanceof Blob?data:new Blob([data]),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return{status:'saved'}}};
+const say=t=>{$('msg').textContent=t};
+async function savePng(pg){if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');
+try{const c=drawPage(L,pg,2.083),b=await new Promise(r=>c.toBlob(r,'image/png'));await dl.save({filename:`qolyozma-${pg+1}.png`,data:b});say('Saqlandi ✓')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'Saqlab boʻlmadi.')}}
+$('pdf').onclick=async()=>{if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');
+if(!window.jspdf)return say('PDF kutubxonasi yuklanmadi — internetni tekshiring.');
+const [W,H]=DIM[L.o.page],sc=+$('dpi').value;try{const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});
+for(let i=0;i<L.n;i++){say(`PDF tayyorlanmoqda: ${i+1} / ${L.n}…`);await new Promise(r=>setTimeout(r,20));if(i)doc.addPage([W,H],'portrait');doc.addImage(drawPage(L,i,sc).toDataURL('image/jpeg',.95),'JPEG',0,0,W,H)}
+await dl.save({filename:'qolyozma.pdf',data:doc.output('blob')});say('Saqlandi ✓')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'PDF saqlab boʻlmadi. 200 DPI ni sinab koʻring.')}};
+$('sample').onclick=()=>{$('txt').value=SAMPLE;go()};
+$('test').onclick=async()=>{if(!dl)return say('Yuklab olish bu muhitda mavjud emas. Sahifani brauzerda oching.');if(!window.jspdf)return say('PDF kutubxonasi yuklanmadi.');
+const b=opts(),sc=Math.min(+$('dpi').value,2.083),[W,H]=DIM.a4,out=document.createElement('canvas');out.width=W*sc;out.height=H*sc;const x=out.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,out.width,out.height);
+try{const lv=[-30,-15,0,15,30];for(let i=0;i<5;i++){say(`Sinov varagʻi: ${i+1} / 5…`);await new Promise(r=>setTimeout(r,20));
+const o={...b,page:'a4',paper:'plain',ink:adj(ink,lv[i]),ink2:adj(ink2,lv[i]),text:`Tuzatish ${lv[i]>0?'+':''}${lv[i]}%\nSinov: Olma 0123 Hello`},Lh=layout(o);Lh.H=Math.round(Lh.top+2*Lh.lh+14);
+x.drawImage(drawPage(Lh,0,sc),0,(20+i*165)*sc)}
+const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});doc.addImage(out.toDataURL('image/jpeg',.95),'JPEG',0,0,W,H);
+await dl.save({filename:'sinov-varagi.pdf',data:doc.output('blob')});say('Saqlandi ✓ — chop eting va eng yaxshi qatorni tanlang.')}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'Sinov varagʻini saqlab boʻlmadi.')}};$('clear').onclick=()=>{$('txt').value='';go()};
+let t;function go(){clearTimeout(t);t=setTimeout(render,250)}
+[['th','v1'],['rough','v2'],['size','v3'],['ls','v4'],['jit','v5'],['margin','v6'],['pd','v7'],['mx','v8']].forEach(([a,b])=>$(a).addEventListener('input',()=>{$(b).textContent=$(a).value}));
+['txt','font','paper','page','fin','pen','th','rough','size','ls','jit','margin','pd','bw','mx'].forEach(i=>$(i).addEventListener('input',go));
+document.fonts&&document.fonts.ready.then(()=>{go();hero()});go();hero();
+</script>
+</body>
+</html>

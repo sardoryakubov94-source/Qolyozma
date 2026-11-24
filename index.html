@@ -553,7 +553,7 @@ const shape=appleUpper
   :ch==='L'?{sx:.99+R()*.04,sy:.98+R()*.04,slant:-.135+(R()-.5)*.025,tilt:-.01+(R()-.5)*.018}
   :{sx:.96+R()*.08,sy:.97+R()*.06,slant:(R()-.5)*.075,tilt:(R()-.5)*.03})
  :(apple?forms[form]:{sx:1,sy:1,slant:0,tilt:0});
-y.save();y.translate(cx+cw/2+jx,base+yo+jy+(cx-left)/maxW*slope);y.rotate(rot+shape.tilt);y.scale(sz*shape.sx,sz*shape.sy);y.transform(1,0,shape.slant,1,0,0);
+y.save();y.translate(cx+cw/2+jx,base+yo+jy+(cx-left)/maxW*slope);y.rotate(rot+shape.tilt);y.scale(sz*shape.sx,sz*shape.sy);y.transform(1,0,shape.slant+(appleUpper&&ch!=='I'&&ch!=='L'?-.07:0),1,0,0);
 y.globalAlpha=pro?.91+R()*.09:1;
 y.fillStyle=y.strokeStyle=`rgb(${v},${v},${v})`;y.lineWidth=tw*(pro?.72+R()*.62:.85+R()*.3)+(ln.fs>o.size?.5:0);
 if(apple&&'QWIFT SGLZ'.replace(/ /g,'').includes(ch)){

@@ -11,6 +11,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.view.View;
 import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -24,10 +25,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
-        getWindow().setStatusBarColor(Color.parseColor("#0a0a0d"));
-        getWindow().setNavigationBarColor(Color.parseColor("#0a0a0d"));
+        int lightSurface = Color.parseColor("#f7f5ef");
+        getWindow().setStatusBarColor(lightSurface);
+        getWindow().setNavigationBarColor(lightSurface);
+        int systemUi = 0;
+        if (android.os.Build.VERSION.SDK_INT >= 23) systemUi |= 0x00002000; // LIGHT_STATUS_BAR
+        if (android.os.Build.VERSION.SDK_INT >= 26) systemUi |= 0x00000010; // LIGHT_NAVIGATION_BAR
+        getWindow().getDecorView().setSystemUiVisibility(systemUi);
         web = new WebView(this);
-        web.setBackgroundColor(Color.parseColor("#0a0a0d"));
+        web.setBackgroundColor(lightSurface);
         setContentView(web);
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);

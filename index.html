@@ -173,6 +173,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
  <button class="b" id="studioStart" type="button" hidden>Boshlash</button>
  <div class="hint" id="fileStatus" role="status">Faylni tanlang, soʻng “Boshlash” tugmasini bosing. Mavjud matn almashtiriladi.</div>
 <textarea id="txt"></textarea>
+<button class="g" type="button" id="clearText" style="margin-top:8px">Tozalash</button>
 <div class="hint"># Sarlavha · x^2 yuqori indeks · H_2O quyi indeks · C_{12}, x^{n+1} — koʻp belgili</div>
 <div id="msg" role="status"></div>
 </div>
@@ -418,6 +419,13 @@ $('ocrPdf').addEventListener('click',()=>{
  win.document.write('<!doctype html><html lang="uz"><meta charset="utf-8"><title>Tanilgan matn</title><style>body{font:12pt/1.6 Arial,sans-serif;margin:22mm;color:#111}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}@page{size:A4;margin:18mm}</style><pre>'+safe+'</pre><script>window.onload=()=>window.print()<\/script></html>');win.document.close();
 });
 
+$('clearText').addEventListener('click',()=>{
+ clearTimeout(t);tok++;$('txt').value='';$('pages').innerHTML='';L=null;
+ $('sourceFile').value='';$('studioSelectedFile').textContent='Hozircha fayl tanlanmagan.';
+ $('studioStart').hidden=true;$('studioStart').disabled=false;
+ $('fileStatus').textContent='Matn va qoʻlyozma sahifalari tozalandi.';$('fileStatus').className='hint';
+ $('msg').textContent='Tozalandi.';
+});
 $('txt').value=SAMPLE;
 const INKS=[[24,50,170],[10,20,90],[18,18,22],[10,90,60],[170,28,40],[110,40,150]];let ink=INKS[0];
 const dark=c=>c.map(v=>Math.round(v*.45)),hex=c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');let ink2=dark(ink);
@@ -611,9 +619,12 @@ L=layout(o);const box=$('pages');box.innerHTML='';
 for(let pg=0;pg<L.n;pg++){
 const cv=drawPage(L,pg,1.5),w=document.createElement('div');w.className='pg';w.appendChild(cv);
 const cap=document.createElement('div');cap.className='cap';cap.innerHTML=`<span>${pg+1} / ${L.n}-sahifa</span>`;
-const pngBtn=document.createElement('button');pngBtn.className='g';pngBtn.textContent='PNG';pngBtn.title='Sahifani PNG formatida saqlash';pngBtn.onclick=()=>saveImage(pg,'png');cap.appendChild(pngBtn);
-const jpgBtn=document.createElement('button');jpgBtn.className='g';jpgBtn.textContent='JPEG';jpgBtn.title='Sahifani JPEG formatida saqlash';jpgBtn.onclick=()=>saveImage(pg,'jpeg');cap.appendChild(jpgBtn);
-const pdfBtn=document.createElement('button');pdfBtn.className='g';pdfBtn.textContent='PDF';pdfBtn.title='Faqat shu sahifani PDF formatida saqlash';pdfBtn.onclick=()=>savePdf(pg);cap.appendChild(pdfBtn);w.appendChild(cap);box.appendChild(w);
+if(pg===L.n-1){
+ const pngBtn=document.createElement('button');pngBtn.className='g';pngBtn.textContent='PNG';pngBtn.title='Oxirgi sahifani PNG formatida saqlash';pngBtn.onclick=()=>saveImage(pg,'png');cap.appendChild(pngBtn);
+ const jpgBtn=document.createElement('button');jpgBtn.className='g';jpgBtn.textContent='JPEG';jpgBtn.title='Oxirgi sahifani JPEG formatida saqlash';jpgBtn.onclick=()=>saveImage(pg,'jpeg');cap.appendChild(jpgBtn);
+ const pdfBtn=document.createElement('button');pdfBtn.className='g';pdfBtn.textContent='PDF';pdfBtn.title='Barcha sahifalarni bitta PDF faylida saqlash';pdfBtn.onclick=()=>savePdf();cap.appendChild(pdfBtn);
+}
+w.appendChild(cap);box.appendChild(w);
 if(pg%2==1)await new Promise(r=>setTimeout(r,0));if(my!==tok)return}}
 async function hero(){
 const o={font:'Caveat',paper:'ruled',page:'a5',size:24,ls:1.6,jit:.5,margin:50,th:.55,rough:.6,pen:'bp',fin:'clean',ink:INKS[0],ink2:dark(INKS[0]),mix:.4,text:'# Salom!\nBu sahifa kompyuterda yozilgan, lekin xuddi sharikli ruchka bilan qoʻlda yozilgandek koʻrinadi.\n\nE_k = mv^2/2'};

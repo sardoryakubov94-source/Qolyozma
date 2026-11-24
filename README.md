@@ -13,10 +13,11 @@ Oddiy matn va ilmiy maqolalarni **sharikli ruchkada qoʻlda yozilgandek** koʻri
 - Ilmiy matn: `# Sarlavha`, `x^2`, `H_2O`, `C_{12}`, `x^{n+1}`
 - Qogʻoz: chiziqli, daftar, katakli, nuqtali, oq; A4 / A5 / Letter
 - Eksport: koʻp sahifali PDF (300 / 200 DPI) va har bir sahifa PNG
+- **Fayldan matn importi:** PDF va Word (`.docx`) hujjatlarini yuklash, matnini avtomatik ajratib qoʻlyozmaga aylantirish (30 MB gacha)
 
 ## Ishga tushirish
 
-Hech narsa oʻrnatish shart emas. `index.html` ni brauzerda oching.
+Hech narsa oʻrnatish shart emas. `index.html` ni brauzerda oching. PDF importi uchun PDF.js, Word importi uchun Mammoth kutubxonalari CDN orqali yuklanadi.
 
 > Internet kerak: yozuv shriftlari Google Fonts’dan, PDF kutubxonasi (jsPDF) cdnjs’dan yuklanadi.
 

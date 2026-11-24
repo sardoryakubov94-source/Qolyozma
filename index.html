@@ -188,6 +188,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 </div>
 <div class="font-picker">
 <label>Yozuv uslubi — <span id="nf">0</span> ta tayyor namuna</label>
+<div class="hint" style="margin:6px 0 10px;padding:10px 12px;border-left:3px solid var(--acc);background:var(--bg2);border-radius:8px"><b>⭐ Tavsiya etiladi: Homemade Apple</b><br>Takrorlangan harflari biroz turlicha ko‘rinadigan, tabiiy qo‘lyozmaga yaqin uslub. Avval shu shriftni sinab ko‘ring.</div>
 <input id="fontSearch" class="font-search" type="search" placeholder="Shriftlarni qidirish..." autocomplete="off">
 <div class="font-tools"><span id="fontCount" class="hint">Yozuv uslubini tanlang</span><button class="g font-fav-filter" id="fontFavFilter" type="button" aria-pressed="false">☆ Sevimlilar</button></div>
 <div id="fontGallery" class="font-gallery" aria-label="Yozuv uslublari"></div>
@@ -413,9 +414,10 @@ $('cp2').addEventListener('input',e=>{const h=e.target.value;ink2=[1,3,5].map(i=
 const adj=(c,p=+$('pd').value)=>{const d=p/100;let r=c.map(v=>d>0?v*(1-d*.6):v+(255-v)*-d*.6);if($('bw').checked){const g=.3*r[0]+.59*r[1]+.11*r[2];r=[g,g,g]}return r.map(Math.round)};
 $('cp').addEventListener('input',e=>{const h=e.target.value;ink=[1,3,5].map(i=>parseInt(h.substr(i,2),16));ink2=dark(ink);$('cp2').value=hex(ink2);[...$('inks').children].forEach(x=>x.classList.remove('on'));go()});
 INKS.forEach((c,i)=>{const b=document.createElement('button');b.style.background=`rgb(${c})`;if(!i)b.className='on';b.onclick=()=>{ink=c;ink2=dark(c);$('cp').value=hex(c);$('cp2').value=hex(ink2);[...$('inks').children].forEach(x=>x.classList.remove('on'));b.classList.add('on');go()};$('inks').appendChild(b)});
-const FG={'Kirill + lotin (· kir)':['Caveat','Marck Script','Bad Script','Neucha','Pangolin','Marmelad','Underdog','Amatic SC','Pacifico','Lobster Two'],
+const FG={'⭐ Tavsiya etiladi':['Homemade Apple'],
+'Kirill + lotin (· kir)':['Caveat','Marck Script','Bad Script','Neucha','Pangolin','Marmelad','Underdog','Amatic SC','Pacifico','Lobster Two'],
 'Real qoʻlyozma uslublari (lotin)':['Reenie Beanie','Covered By Your Grace','Nothing You Could Do','Waiting for the Sunrise','Zeyada','Over the Rainbow','Cedarville Cursive','La Belle Aurore','Loved by the King','Annie Use Your Telescope','Gloria Hallelujah','Schoolbell','Coming Soon','Just Another Hand','Sue Ellen Francisco','Mansalva','Give You Glory','Swanky and Moo Moo','Shadows Into Light','Indie Flower','Patrick Hand','Handlee','Architects Daughter','Kalam','Walter Turncoat','Gochi Hand','Delicious Handrawn','Shantell Sans'],
-'Kursiv / bezakli (lotin)':['Dancing Script','Satisfy','Sacramento','Homemade Apple'],
+'Kursiv / bezakli (lotin)':['Dancing Script','Satisfy','Sacramento'],
 'Marker / qalin (lotin)':['Permanent Marker','Rock Salt','Caveat Brush','Short Stack','Nanum Pen Script']};
 const CY=new Set(FG['Kirill + lotin (· kir)']);
 Object.entries(FG).forEach(([g,a])=>{const og=document.createElement('optgroup');og.label=g;a.forEach(n=>og.appendChild(new Option(n+(CY.has(n)?' · kir':''),n)));$('font').appendChild(og)});

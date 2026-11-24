@@ -34,23 +34,15 @@ h2{font-size:clamp(28px,4vw,42px)}em{color:var(--acc)}
 #hc{width:100%;height:auto;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.45);transform:rotate(1.5deg);background:#fff}
 section{padding:46px 0;border-top:1px solid var(--line)}
 
-.convert-wrap{margin:12px auto 30px;padding:24px;border-radius:22px;background:linear-gradient(135deg,#4c2588 0%,#7044b5 55%,#8b5bd0 100%);color:#fff;box-shadow:0 16px 42px rgba(75,37,136,.22)}
-.convert-head{text-align:center;margin-bottom:18px}
-.convert-kicker{display:inline-block;font-size:11px;letter-spacing:.16em;font-weight:750;color:#e5d6ff;border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:5px 11px;margin-bottom:9px}
-.convert-head h2{margin:0 0 7px;color:#fff;font-size:clamp(28px,4vw,38px)}
-.convert-head p{margin:0;color:#eee4ff;font-size:14px}
-.convert-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.convert-choice{display:flex;align-items:center;gap:12px;text-align:left;min-width:0;border:1px solid rgba(255,255,255,.28);border-radius:15px;padding:15px;background:rgba(255,255,255,.13);color:#fff;cursor:pointer;font:inherit;transition:background .18s,transform .18s}
-.convert-choice:hover,.convert-choice:focus-visible{background:rgba(255,255,255,.23);transform:translateY(-1px)}
-.convert-choice>span:nth-child(2){display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
-.convert-choice strong{font-size:15px;line-height:1.3}.convert-choice small{font-size:12px;line-height:1.4;color:#eee4ff}
-.convert-choice>b{font-size:23px;font-weight:400}
-.convert-icon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:rgba(255,255,255,.17);display:grid;place-items:center;font-size:25px}
+.convert-wrap{margin:12px auto 24px;padding:15px;border-radius:18px;background:linear-gradient(135deg,#4c2588 0%,#7044b5 55%,#8b5bd0 100%);color:#fff;box-shadow:0 12px 30px rgba(75,37,136,.18)}
+.convert-switch{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 12px;border:1px solid rgba(255,255,255,.3);border-radius:13px;background:rgba(255,255,255,.13);color:#fff;font:inherit;cursor:pointer}
+.convert-switch span{font-size:15px;font-weight:650}.convert-switch .convert-arrow{font-size:22px;font-weight:400;opacity:.9}
+.convert-switch:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .convert-panel{margin-top:16px;padding:18px;border-radius:16px;background:#fff;color:#24202d;box-shadow:0 8px 25px rgba(22,10,40,.12)}
 .convert-panel[hidden]{display:none}
-.convert-panel-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:17px}
-.convert-close{border:0;background:#f0ebf8;color:#56328d;border-radius:50%;width:34px;height:34px;font-size:24px;cursor:pointer}
-.convert-panel>p{color:#6c6675;font-size:13px;margin:8px 0 13px}
+
+
+
 .convert-upload{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px;border:1.5px dashed #a58acb;border-radius:13px;background:#f8f5fc;color:#523187;cursor:pointer;text-align:center}
 .convert-upload span{font-size:27px}.convert-upload small{font-size:11px;color:#777080;font-weight:400}
 .convert-row{display:flex;align-items:center;gap:12px;margin:12px 0}.convert-row label{margin:0;color:#595365}.convert-row select{max-width:230px;background:#faf9fc;color:#272332;border-color:#ddd5e9}
@@ -58,7 +50,7 @@ section{padding:46px 0;border-top:1px solid var(--line)}
 .convert-status.error{color:#a52d40;background:#fff0f1}.convert-status.ok{color:#176b4c;background:#edf9f2}
 .ocr-result{min-height:230px;height:230px;background:#fff;color:#211d29;border-color:#dcd5e6}
 .ocr-export{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.ocr-export button{flex:1 1 135px}
-.convert-note{font-size:11px!important;color:#777080!important;margin-top:10px!important}
+
 @media(max-width:620px){.convert-wrap{padding:18px 14px;margin:8px auto 22px;border-radius:18px}.convert-actions{grid-template-columns:1fr}.convert-choice{padding:13px}.convert-panel{padding:13px}.convert-row{align-items:flex-start;flex-direction:column;gap:4px}.convert-row select{max-width:none}.ocr-export button{flex:1 1 calc(50% - 8px)}}
 
 .num{color:var(--acc);font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
@@ -148,30 +140,19 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
 <div class="w">
 <nav><div class="logo">Qoʻl<b>yozma</b></div><a class="cta" href="#studio">Boshlash</a></nav>
 <section class="convert-wrap" id="convert">
- <div class="convert-head"><span class="convert-kicker">YANGI IMKONIYAT</span><h2>Konvertatsiya</h2><p>Qoʻlyozmani kompyuter matniga yoki kompyuter matnini qoʻlyozmaga aylantiring.</p></div>
- <div class="convert-actions">
-  <button class="convert-choice" id="openOcr" type="button"><span class="convert-icon">⌕</span><span><strong>Qoʻlyozmani kompyuter formatiga</strong><small>Rasm, JPEG, PNG yoki PDF dan matnni tanib olish</small></span><b>→</b></button>
-  <button class="convert-choice" id="openHand" type="button"><span class="convert-icon">✍</span><span><strong>Kompyuter formatidagi yozuvni qoʻlyozmaga</strong><small>Word, Excel, PDF yoki matnni qoʻlyozmaga aylantirish</small></span><b>→</b></button>
+ <button class="convert-switch" id="convertSwitch" type="button" aria-label="Konvertatsiya yoʻnalishini almashtirish"><span id="convertFrom">Komp. yozuvi</span><span class="convert-arrow">→</span><span id="convertTo">Qoʻlyozma</span></button>
+ <div class="convert-panel" id="handPanel">
+  <label class="convert-upload" for="handFile"><b>Word, Excel yoki PDF faylni yuklang</b></label>
+  <input id="handFile" type="file" accept=".docx,.xlsx,.xls,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+  <div class="convert-status" id="handStatus" role="status"></div>
  </div>
  <div class="convert-panel" id="ocrPanel" hidden>
-  <div class="convert-panel-title"><strong>Qoʻlyozmani kompyuter matniga oʻgirish</strong><button class="convert-close" type="button" data-close="ocrPanel" aria-label="Yopish">×</button></div>
-  <p>Qoʻlyozma tushirilgan rasm yoki PDF faylni tanlang. OCR matnni ajratadi, natijani tekshirib tahrirlashingiz mumkin.</p>
-  <label class="convert-upload" for="ocrFile"><span>＋</span><b>Rasm yoki PDF yuklash</b><small>JPG · JPEG · PNG · WEBP · PDF · 30 MB gacha</small></label>
+  <label class="convert-upload" for="ocrFile"><b>Qoʻlyozma rasmi yoki PDF faylni yuklang</b></label>
   <input id="ocrFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp,application/pdf" hidden>
-  <div class="convert-row"><label for="ocrLang">Matn tili</label><select id="ocrLang"><option value="uzb+eng">Oʻzbek va ingliz</option><option value="uzb+eng+rus">Oʻzbek, ingliz va rus</option><option value="rus+eng">Rus va ingliz</option><option value="eng">Ingliz</option></select></div>
-  <div id="ocrStatus" class="convert-status" role="status">Fayl qurilmangizning oʻzida qayta ishlanadi. Bir necha sahifali PDF biroz vaqt olishi mumkin.</div>
-  <label for="ocrResult">Tanib olingan matn (tekshirib tahrirlang)</label>
-  <textarea id="ocrResult" class="ocr-result" placeholder="Tanib olingan matn shu yerda paydo boʻladi..."></textarea>
-  <div class="ocr-export"><button class="b" id="ocrWord" type="button">Word yuklab olish</button><button class="g" id="ocrExcel" type="button">Excel yuklab olish</button><button class="g" id="ocrPdf" type="button">PDF chiqarish</button><button class="g" id="ocrCopy" type="button">Matnni nusxalash</button></div>
-  <p class="convert-note">Eslatma: OCR qoʻlyozmani har doim ham 100% toʻgʻri oʻqimaydi. Yuklab olishdan oldin ism, raqam, formula va imloni tekshiring.</p>
- </div>
- <div class="convert-panel" id="handPanel" hidden>
-  <div class="convert-panel-title"><strong>Kompyuter matnini qoʻlyozmaga oʻgirish</strong><button class="convert-close" type="button" data-close="handPanel" aria-label="Yopish">×</button></div>
-  <p>Faylni tanlang — matn mavjud qoʻlyozma studiyasiga joylanadi. U yerdagi barcha shrift, ruchka va qogʻoz sozlamalari oʻzgarishsiz ishlaydi.</p>
-  <label class="convert-upload" for="handFile"><span>＋</span><b>Word, Excel yoki PDF yuklash</b><small>DOCX · XLSX · XLS · PDF · 30 MB gacha</small></label>
-  <input id="handFile" type="file" accept=".docx,.xlsx,.xls,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-  <div class="convert-status" id="handStatus" role="status">Fayl tanlangach, matn mavjud qoʻlyozma studiyasiga oʻtkaziladi.</div>
-  <button class="b" id="goStudio" type="button">Qoʻlyozma sozlamalariga oʻtish</button>
+  <div class="convert-row"><label for="ocrLang">Til</label><select id="ocrLang"><option value="uzb+eng">Oʻzbek va ingliz</option><option value="uzb+eng+rus">Oʻzbek, ingliz va rus</option><option value="rus+eng">Rus va ingliz</option><option value="eng">Ingliz</option></select></div>
+  <div id="ocrStatus" class="convert-status" role="status"></div>
+  <label for="ocrResult">Tanilgan matn</label><textarea id="ocrResult" class="ocr-result" placeholder="Tanilgan matn..."></textarea>
+  <div class="ocr-export"><button class="b" id="ocrWord" type="button">Word</button><button class="g" id="ocrExcel" type="button">Excel</button><button class="g" id="ocrPdf" type="button">PDF</button></div>
  </div>
 </section>
 <div class="hero"><div>
@@ -342,13 +323,12 @@ Kinetik energiya E_k = mv^2/2 formula bilan topiladi. Massasi m = 2 kg, tezligi 
 
 Xulosa: yorugʻlik, suv va karbonat angidrid fotosintezning asosiy shartlaridir.`;
 
-/* Conversion hub: OCR runs locally in the browser; existing handwriting studio stays intact. */
-const openOcr=$('openOcr'),openHand=$('openHand'),ocrPanel=$('ocrPanel'),handPanel=$('handPanel');
-function showConvertPanel(which){ocrPanel.hidden=which!=='ocr';handPanel.hidden=which!=='hand';(which==='ocr'?ocrPanel:handPanel).scrollIntoView({behavior:'smooth',block:'nearest'})}
-openOcr.addEventListener('click',()=>showConvertPanel('ocr'));
-openHand.addEventListener('click',()=>{showConvertPanel('hand');$('handFile').click()});
-document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).hidden=true));
-$('goStudio').addEventListener('click',()=>document.querySelector('#studio').scrollIntoView({behavior:'smooth'}));
+/* Conversion direction switch */
+const ocrPanel=$('ocrPanel'),handPanel=$('handPanel');
+let convertDirection='hand';
+function updateConvertDirection(){const hand=convertDirection==='hand';$('convertFrom').textContent=hand?'Komp. yozuvi':'Qoʻlyozma';$('convertTo').textContent=hand?'Qoʻlyozma':'Komp. yozuvi';handPanel.hidden=!hand;ocrPanel.hidden=hand;}
+$('convertSwitch').addEventListener('click',()=>{convertDirection=convertDirection==='hand'?'computer':'hand';updateConvertDirection()});
+updateConvertDirection();
 $('handFile').addEventListener('change',async()=>{
  const file=$('handFile').files&&$('handFile').files[0];if(!file)return;
  const status=$('handStatus'),ext=file.name.toLowerCase().split('.').pop();
@@ -427,7 +407,6 @@ $('ocrPdf').addEventListener('click',()=>{
  const safe=textOut.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
  win.document.write('<!doctype html><html lang="uz"><meta charset="utf-8"><title>Tanilgan matn</title><style>body{font:12pt/1.6 Arial,sans-serif;margin:22mm;color:#111}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}@page{size:A4;margin:18mm}</style><pre>'+safe+'</pre><script>window.onload=()=>window.print()<\/script></html>');win.document.close();
 });
-$('ocrCopy').addEventListener('click',async()=>{const t=getOcrText();if(!t)return;try{await navigator.clipboard.writeText(t);$('ocrStatus').textContent='Matn nusxalandi ✓'}catch(e){$('ocrResult').select();$('ocrStatus').textContent='Matnni nusxalash uchun maydonni belgilang va Copy ni tanlang.'}});
 
 $('txt').value=SAMPLE;
 const INKS=[[24,50,170],[10,20,90],[18,18,22],[10,90,60],[170,28,40],[110,40,150]];let ink=INKS[0];

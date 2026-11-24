@@ -509,7 +509,7 @@ cx.putImageData(id,0,0)}
 let L=null,tok=0;
 function opts(){return{font:$('font').value,realism:$('realism').value,paper:$('paper').value,page:$('page').value,size:+$('size').value,ls:+$('ls').value,jit:+$('jit').value/100,margin:+$('margin').value,th:+$('th').value/100,rough:+$('rough').value/100,pen:$('pen').value,fin:$('fin').value,ink:adj(ink),ink2:adj(ink2),mix:+$('mx').value/100,text:$('txt').value}}
 function layout(o){
-const [W,H]=DIM[o.page],lh=Math.round(o.size*o.ls),left=o.margin,right=36,top=56,bottom=44,maxW=W-left-right,fam=`"${o.font}",cursive`,f=p=>`${p}px ${fam}`,mc=document.createElement('canvas').getContext('2d');
+const [W,H]=DIM[o.page],lh=Math.round(o.size*o.ls),left=o.margin,right=36,top=56,bottom=44,maxW=W-left-right,fam=o.font==='Homemade Apple'?'"Homemade Apple","Caveat",cursive':`"${o.font}",cursive`,f=p=>`${p}px ${fam}`,mc=document.createElement('canvas').getContext('2d');
 const wW=(w,fs)=>{let s=0;for(const r of w){mc.font=f(fs*(r.m?.62:1));for(const c of r.t)s+=mc.measureText(c).width}return s};
 const lines=[];
 for(const p of parse(o.text)){const fs=o.size*(p.h?[0,1.35,1.2,1.1][p.h]:1);
@@ -604,7 +604,7 @@ const g=x.createRadialGradient(cv.width/2,cv.height/2,cv.width*.4,cv.width/2,cv.
 for(let d=0;d<900;d++){x.fillStyle=`rgba(0,0,0,${R()*.08})`;x.fillRect(R()*cv.width,R()*cv.height,R()*2*sc+.5,R()*2*sc+.5)}}
 return cv}
 async function render(){
-const my=++tok,o=opts();await loadFont(o.font);if(/[\u0400-\u04FF]/.test(o.text)&&!CY.has(o.font))say('Bu shriftda kirill harflari yoʻq. Kirill uchun “kir” belgili shriftni tanlang.');
+const my=++tok,o=opts();await loadFont(o.font);if(o.font==='Homemade Apple')await loadFont('Caveat');if(/[\u0400-\u04FF]/.test(o.text)&&!CY.has(o.font))say('Bu shriftda kirill harflari yoʻq. Kirill uchun “kir” belgili shriftni tanlang.');
 try{await document.fonts.load(`${o.size}px "${o.font}"`,'Abвг')}catch(e){}
 if(my!==tok)return;
 L=layout(o);const box=$('pages');box.innerHTML='';

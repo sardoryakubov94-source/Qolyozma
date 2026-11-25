@@ -150,12 +150,12 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
  <div class="convert-panel" id="ocrPanel" hidden>
   <label class="convert-upload" for="ocrFile"><b>Qoʻlyozma rasmi yoki PDF faylni yuklang</b></label>
   <input id="ocrFile" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp,application/pdf" hidden>
-  <div class="convert-row"><label for="ocrLang">Til</label><select id="ocrLang"><option value="uzb+eng">Oʻzbek va ingliz</option><option value="uzb+eng+rus">Oʻzbek, ingliz va rus</option><option value="rus+eng">Rus va ingliz</option><option value="eng">Ingliz</option></select></div>
-  <div id="ocrSelectedFile" class="convert-status" role="status">Hozircha fayl tanlanmagan.</div>
+  <div class="convert-row"><label for="ocrLang">Til</label><select id="ocrLang"><option value="uzb+eng">Oʻzbek va ingliz</option><option value="uzb+eng+rus">Oʻzbek, ingliz va rus</option><option value="uzb_cyrl+rus+eng">Oʻzbek (kirill), rus va ingliz</option><option value="rus+eng">Rus va ingliz</option><option value="eng">Ingliz</option></select></div>
+  <label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" id="ocrEnh" checked> Rasmni yaxshilash (kontrast, daftar chiziqlarini olib tashlash)</label><div class="convert-status">Eslatma: qoʻlda yozilgan matnni tanish bosma matnga qaraganda kamroq aniq. Eng yaxshi natija — yorugʻ, tekis suratga olingan, aniq yozilgan matn.</div><div id="ocrSelectedFile" class="convert-status" role="status">Hozircha fayl tanlanmagan.</div>
    <button class="b" id="ocrStart" type="button" hidden>Boshlash</button>
    <div id="ocrStatus" class="convert-status" role="status"></div>
   <label for="ocrResult">Tanilgan matn</label><textarea id="ocrResult" class="ocr-result" placeholder="Tanilgan matn..."></textarea>
-  <div class="ocr-export"><button class="b" id="ocrWord" type="button">Word</button><button class="g" id="ocrExcel" type="button">Excel</button><button class="g" id="ocrPdf" type="button">PDF</button></div>
+  <div class="ocr-export"><button class="b" id="ocrToStudio" type="button">Qoʻlyozmaga oʻtkazish →</button><button class="g" id="ocrCopy" type="button">Nusxa olish</button><button class="g" id="ocrTxt" type="button">TXT</button><button class="g" id="ocrWord" type="button">Word</button><button class="g" id="ocrExcel" type="button">Excel</button><button class="g" id="ocrPdf" type="button">PDF</button></div>
  </div>
 </section>
 
@@ -173,7 +173,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);fon
  <button class="b" id="studioStart" type="button" hidden>Boshlash</button>
  <div class="hint" id="fileStatus" role="status">Faylni tanlang, soʻng “Boshlash” tugmasini bosing. Mavjud matn almashtiriladi.</div>
 <textarea id="txt"></textarea>
-<button class="g" type="button" id="clearText" style="margin-top:8px">Tozalash</button>
+<div class="btns" style="margin-top:8px"><button class="g" type="button" id="clearText">Tozalash</button><button class="g" type="button" id="reseed" title="Harflarning yangi, boshqacha yozilishini yaratadi">🎲 Yangi yozuv</button><button class="g" type="button" id="toCyr">Lotin → Кирилл</button><button class="g" type="button" id="toLat">Кирилл → Lotin</button></div><div class="hint" id="stats"></div>
 <div class="hint"># Sarlavha · x^2 yuqori indeks · H_2O quyi indeks · C_{12}, x^{n+1} — koʻp belgili</div>
 <div id="msg" role="status"></div>
 </div>
@@ -302,17 +302,9 @@ async function processStudioFile(file){
     pages.push(line.trim());
    }
    extracted=pages.filter(Boolean).join('\n\n');
-   if(!extracted.trim())throw new Error('PDF ichidan matn topilmadi. Bu skanerlangan rasmli PDF boʻlishi mumkin; hozircha matnli PDF yuklang.');
+   if(!extracted.trim()){sayFile('PDF ichida matn qatlami yoʻq — skaner sifatida OCR qilinmoqda…');extracted=await ocrRun(file,'uzb+eng',sayFile,true)}
   }else if(['jpg','jpeg','png'].includes(ext)){
-   if(!window.Tesseract)throw new Error('OCR moduli yuklanmadi. Internet aloqasini tekshiring.');
-   sayFile('Rasmdagi matn tanilmoqda. Birinchi marta til fayllari yuklanishi mumkin…');
-   const worker=await Tesseract.createWorker('uzb+eng',1,{logger:m=>{
-    if(m.status==='recognizing text')sayFile('Rasmdagi matn ajratilmoqda: '+Math.round((m.progress||0)*100)+'%');
-   }});
-   try{
-    const result=await worker.recognize(file);
-    extracted=result.data.text||'';
-   }finally{await worker.terminate()}
+   extracted=await ocrRun(file,'uzb+eng',sayFile,true);
    if(!extracted.trim())throw new Error('Rasm ichidan matn topilmadi. Aniqroq, yorugʻ rasm yuklab koʻring.');
   }else{
    throw new Error('PDF, Word DOCX, Excel XLSX/XLS yoki JPG/JPEG/PNG rasm tanlang.');
@@ -356,33 +348,48 @@ let convertDirection='hand';
 function updateConvertDirection(){const hand=convertDirection==='hand';$('convertFrom').textContent=hand?'Komp. yozuvi':'Qoʻlyozma';$('convertTo').textContent=hand?'Qoʻlyozma':'Komp. yozuvi';ocrPanel.hidden=hand;}
 $('convertSwitch').addEventListener('click',()=>{convertDirection=convertDirection==='hand'?'computer':'hand';updateConvertDirection();if(convertDirection==='hand')document.querySelector('#studio').scrollIntoView({behavior:'smooth',block:'start'});});
 updateConvertDirection();
-async function ocrFile(file){
- const status=$('ocrStatus'),result=$('ocrResult'),report=(t,k='')=>{status.textContent=t;status.className='convert-status '+k};
- if(file.size>30*1024*1024){report('Fayl hajmi 30 MB dan oshmasligi kerak.','error');return}
- if(!window.Tesseract) {report('OCR kutubxonasi yuklanmadi. Internetni tekshiring.','error');return}
+function enhanceCanvas(src){
+ const big=Math.max(src.width,src.height);let k=Math.min(1,2600/big);if(big<1600)k=Math.min(2,1600/big);
+ const w=Math.max(1,Math.round(src.width*k)),h=Math.max(1,Math.round(src.height*k)),c=document.createElement('canvas');c.width=w;c.height=h;
+ const cx=c.getContext('2d',{willReadFrequently:true});cx.imageSmoothingQuality='high';cx.drawImage(src,0,0,w,h);
+ const id=cx.getImageData(0,0,w,h),d=id.data,n=w*h,g=new Uint8ClampedArray(n);
+ for(let i=0;i<n;i++)g[i]=d[i*4]*.299+d[i*4+1]*.587+d[i*4+2]*.114;
+ const W1=w+1,I=new Float64Array(W1*(h+1));
+ for(let y=0;y<h;y++){let row=0;for(let x=0;x<w;x++){row+=g[y*w+x];I[(y+1)*W1+x+1]=I[y*W1+x+1]+row}}
+ const r=Math.max(15,Math.round(Math.min(w,h)/24));
+ for(let y=0;y<h;y++){const y0=Math.max(0,y-r),y1=Math.min(h,y+r+1);for(let x=0;x<w;x++){const x0=Math.max(0,x-r),x1=Math.min(w,x+r+1);
+  const m=(I[y1*W1+x1]-I[y0*W1+x1]-I[y1*W1+x0]+I[y0*W1+x0])/((x1-x0)*(y1-y0)),v=g[y*w+x]<m*.72?0:255,o=(y*w+x)*4;d[o]=d[o+1]=d[o+2]=v;d[o+3]=255}}
+ cx.putImageData(id,0,0);return c}
+async function ocrRun(file,lang,report,enhance=true){
+ if(!window.Tesseract)throw new Error('OCR kutubxonasi yuklanmadi. Internetni tekshiring.');
+ const ext=file.name.toLowerCase().split('.').pop(),imgs=[];
+ if(ext==='pdf'){
+  if(!window.pdfjsLib)throw new Error('PDF moduli yuklanmadi.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+  if(pdf.numPages>30)throw new Error('Hozircha bir martada 30 sahifagacha OCR qilish mumkin.');
+  for(let n=1;n<=pdf.numPages;n++){report('PDF sahifasi tayyorlanmoqda: '+n+' / '+pdf.numPages);
+   const page=await pdf.getPage(n),vp=page.getViewport({scale:2}),c=document.createElement('canvas');c.width=Math.ceil(vp.width);c.height=Math.ceil(vp.height);
+   await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;imgs.push(c)}
+ }else{
+  let bmp;try{bmp=await createImageBitmap(file)}catch(e){throw new Error('Rasmni ochib boʻlmadi. JPG yoki PNG formatini sinab koʻring.')}
+  const c=document.createElement('canvas');c.width=bmp.width;c.height=bmp.height;c.getContext('2d').drawImage(bmp,0,0);imgs.push(c);bmp.close&&bmp.close()}
+ let worker;
  try{
   report('OCR ishga tushmoqda. Til maʼlumotlari birinchi marta yuklanishi mumkin…');
-  const lang=$('ocrLang').value,worker=await Tesseract.createWorker(lang,1,{logger:m=>{if(m.status==='recognizing text')report('Matn tanilmoqda: '+Math.round((m.progress||0)*100)+'%')}}),images=[];
-  const ext=file.name.toLowerCase().split('.').pop();
-  if(ext==='pdf'){
-   if(!window.pdfjsLib)throw new Error('PDF moduli yuklanmadi.');
-   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-   const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
-   if(pdf.numPages>30)throw new Error('Hozircha bir martada 30 sahifagacha OCR qilish mumkin.');
-   for(let n=1;n<=pdf.numPages;n++){
-    report('PDF sahifasi tayyorlanmoqda: '+n+' / '+pdf.numPages);
-    const page=await pdf.getPage(n),vp=page.getViewport({scale:1.8}),canvas=document.createElement('canvas');canvas.width=Math.ceil(vp.width);canvas.height=Math.ceil(vp.height);
-    await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;images.push(canvas);
-   }
-  }else{
-   const bitmap=await createImageBitmap(file),canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;canvas.getContext('2d').drawImage(bitmap,0,0);images.push(canvas);bitmap.close&&bitmap.close();
-  }
-  const chunks=[];
-  for(let i=0;i<images.length;i++){report('Qoʻlyozma tanilmoqda: '+(i+1)+' / '+images.length+'-sahifa');const r=await worker.recognize(images[i]);chunks.push((r.data.text||'').trim())}
-  await worker.terminate();
-  const textOut=chunks.filter(Boolean).join('\n\n').trim();
-  if(!textOut)throw new Error('Matn tanilmadi. Ravshanroq rasm yoki boshqa tilni tanlab koʻring.');
-  result.value=textOut;report('✓ '+images.length+' sahifa tekshirildi. Matnni tahrirlab, kerakli formatda saqlang.','ok');
+  worker=await Tesseract.createWorker(lang,1,{logger:m=>{if(m.status==='recognizing text')report('Matn tanilmoqda: '+Math.round((m.progress||0)*100)+'%')}});
+  const out=[];
+  for(let i=0;i<imgs.length;i++){report('Tanilmoqda: '+(i+1)+' / '+imgs.length+'-sahifa'+(enhance?' (rasm yaxshilanmoqda)':''));
+   await new Promise(r=>setTimeout(r,0));const r=await worker.recognize(enhance?enhanceCanvas(imgs[i]):imgs[i]);out.push((r.data.text||'').trim())}
+  return out.filter(Boolean).join('\n\n').trim();
+ }finally{if(worker)await worker.terminate()}
+}
+async function ocrFile(file){
+ const status=$('ocrStatus'),report=(t,k='')=>{status.textContent=t;status.className='convert-status '+k};
+ if(file.size>30*1024*1024){report('Fayl hajmi 30 MB dan oshmasligi kerak.','error');return}
+ try{const textOut=await ocrRun(file,$('ocrLang').value,report,$('ocrEnh').checked);
+  if(!textOut)throw new Error('Matn tanilmadi. Ravshanroq rasm yoki boshqa til bilan urinib koʻring; “Rasmni yaxshilash” ni almashtirib ham koʻring.');
+  $('ocrResult').value=textOut;report('✓ Matn tanildi. Uni tahrirlang, soʻng qoʻlyozmaga oʻtkazing yoki saqlang.','ok');
  }catch(e){report(e.message||'OCR jarayonida xatolik yuz berdi.','error')}
 }
 $('ocrFile').addEventListener('change',()=>{
@@ -407,17 +414,24 @@ $('ocrWord').addEventListener('click',async()=>{
  dl.save({filename:'tanilgan-matn.docx',data:blob});$('ocrStatus').textContent='Word fayli tayyor ✓';
  }catch(e){$('ocrStatus').textContent=e.message||'Word fayl yaratilmadi.'}
 });
-$('ocrExcel').addEventListener('click',()=>{
- const textOut=getOcrText();if(!textOut)return;
+$('ocrToStudio').addEventListener('click',()=>{const t=getOcrText();if(!t)return;$('txt').value=t;convertDirection='hand';updateConvertDirection();go();document.querySelector('#studio').scrollIntoView({behavior:'smooth',block:'start'})});
+$('ocrCopy').addEventListener('click',async()=>{const t=getOcrText();if(!t)return;try{await navigator.clipboard.writeText(t)}catch(e){$('ocrResult').select();try{document.execCommand('copy')}catch(_){}}$('ocrStatus').textContent='Nusxa olindi ✓'});
+$('ocrTxt').addEventListener('click',()=>{const t=getOcrText();if(!t)return;dl.save({filename:'tanilgan-matn.txt',data:new Blob([t],{type:'text/plain;charset=utf-8'})});$('ocrStatus').textContent='TXT tayyor ✓'});
+$('ocrExcel').addEventListener('click',async()=>{const t=getOcrText();if(!t)return;
  if(!window.XLSX){$('ocrStatus').textContent='Excel eksport moduli yuklanmadi.';return}
- const rows=textOut.split(/\r?\n/).map(line=>[line]),ws=XLSX.utils.aoa_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tanilgan matn');XLSX.writeFile(wb,'tanilgan-matn.xlsx');
-});
-$('ocrPdf').addEventListener('click',()=>{
- const textOut=getOcrText();if(!textOut)return;
- const win=window.open('','_blank');if(!win){$('ocrStatus').textContent='PDF chiqarish uchun yangi oyna ochishga ruxsat bering.';return}
- const safe=textOut.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
- win.document.write('<!doctype html><html lang="uz"><meta charset="utf-8"><title>Tanilgan matn</title><style>body{font:12pt/1.6 Arial,sans-serif;margin:22mm;color:#111}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}@page{size:A4;margin:18mm}</style><pre>'+safe+'</pre><script>window.onload=()=>window.print()<\/script></html>');win.document.close();
-});
+ try{const ws=XLSX.utils.aoa_to_sheet(t.split(/\r?\n/).map(l=>[l])),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tanilgan matn');
+  const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});await dl.save({filename:'tanilgan-matn.xlsx',data:new Blob([buf],{type:'application/octet-stream'})});$('ocrStatus').textContent='Excel fayli tayyor ✓'}
+ catch(e){$('ocrStatus').textContent='Excel fayl yaratilmadi.'}});
+async function textPdf(text){
+ if(!window.jspdf)throw new Error('PDF kutubxonasi yuklanmadi.');
+ const W=794,H=1123,sc=2,mx=80,my=80,fs=18,lh=28,c=document.createElement('canvas');c.width=W*sc;c.height=H*sc;
+ const x=c.getContext('2d'),font=fs+'px Arial,"Segoe UI",sans-serif';x.scale(sc,sc);x.font=font;
+ const lines=[];for(const para of text.split(/\r?\n/)){if(!para.trim()){lines.push('');continue}let cur='';for(const w of para.split(/\s+/)){const t2=cur?cur+' '+w:w;if(cur&&x.measureText(t2).width>W-2*mx){lines.push(cur);cur=w}else cur=t2}lines.push(cur)}
+ const per=Math.floor((H-2*my)/lh),n=Math.max(1,Math.ceil(lines.length/per)),doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixes:['px_scaling']});
+ for(let p=0;p<n;p++){x.setTransform(sc,0,0,sc,0,0);x.fillStyle='#fff';x.fillRect(0,0,W,H);x.fillStyle='#111';x.font=font;lines.slice(p*per,(p+1)*per).forEach((l,i)=>x.fillText(l,mx,my+(i+1)*lh-8));
+  if(p)doc.addPage([W,H],'portrait');doc.addImage(c.toDataURL('image/jpeg',.92),'JPEG',0,0,W,H)}
+ return doc.output('blob')}
+$('ocrPdf').addEventListener('click',async()=>{const t=getOcrText();if(!t)return;try{$('ocrStatus').textContent='PDF tayyorlanmoqda…';await dl.save({filename:'tanilgan-matn.pdf',data:await textPdf(t)});$('ocrStatus').textContent='PDF tayyor ✓'}catch(e){$('ocrStatus').textContent=e.message||'PDF yaratilmadi.'}});
 
 $('clearText').addEventListener('click',()=>{
  clearTimeout(t);tok++;$('txt').value='';$('pages').innerHTML='';L=null;
@@ -529,6 +543,7 @@ if(cur.length)lines.push({items:cur,h:p.h,fs})}
 const per=Math.max(1,Math.floor((H-top-bottom)/lh));
 return{o,W,H,lh,left,top,maxW,f,lines,per,n:Math.max(1,Math.ceil(lines.length/per))}}
 // kichik 's' nozik variantlari: shakl (cho'qqi-bosh, halqa) saqlanadi, faqat kenglik/balandlik/qiyshayish biroz farq qiladi
+let SEED=(Math.random()*0x7fffffff)|0;
 const S_VAR=[{sx:1,sy:1,slant:0,tilt:0},{sx:1.09,sy:.95,slant:.03,tilt:.012},{sx:.93,sy:1.06,slant:-.03,tilt:-.012},{sx:1.04,sy:1.09,slant:.015,tilt:.008}];
 function drawPage(L,pg,sc,printClean=false){
 const {o,W,H,lh,left,top,maxW,f,lines,per}=L,P=PEN[o.pen];
@@ -541,7 +556,7 @@ if(!printClean&&pp==='grid'){x.strokeStyle='#cfe0ea';const g=Math.round(lh/2);fo
 if(!printClean&&pp==='dotted'){x.fillStyle='#b5c3cf';for(let a=lh;a<W;a+=lh/1.5)for(let b=top;b<H;b+=lh/1.5)x.fillRect(a,b,1.6,1.6)}
 const ic=document.createElement('canvas');ic.width=cv.width;ic.height=cv.height;
 const y=ic.getContext('2d');y.scale(sc,sc);y.textBaseline='alphabetic';y.lineJoin='round';
-const R=rng((Date.now()^Math.floor(Math.random()*0x7fffffff)^(pg*7919))|0),j=o.jit,pro=o.realism==='pro',strength=pro?1:0,tw=o.th*P.t*1.6;
+const R=rng((SEED+pg*7919)|0),j=o.jit,pro=o.realism==='pro',strength=pro?1:0,tw=o.th*P.t*1.6;
 let tVariantIndex=Math.floor(R()*5);const lastGlyphForm=new Map();let lastS=-1,lastZ=-1;
 lines.slice(pg*per,(pg+1)*per).forEach((ln,k)=>{
 const base=top+(k+1)*lh-Math.round(lh*.14),phase=R()*Math.PI*2,slope=(R()-.5)*j*(pro?12:7),wave=(R()-.5)*j*(pro?2.8:0);
@@ -631,7 +646,7 @@ async function render(){
 const my=++tok,o=opts();await loadFont(o.font);if(o.font==='Homemade Apple')await loadFont('Caveat');if(/[\u0400-\u04FF]/.test(o.text)&&!CY.has(o.font))say('Bu shriftda kirill harflari yoʻq. Kirill uchun “kir” belgili shriftni tanlang.');
 try{await document.fonts.load(`${o.size}px "${o.font}"`,'Abвг')}catch(e){}
 if(my!==tok)return;
-L=layout(o);const box=$('pages');box.innerHTML='';
+L=layout(o);const box=$('pages');box.innerHTML='';{const wc=(o.text.match(/\S+/g)||[]).length;$('stats').textContent=wc+' soʻz · '+o.text.length+' belgi · '+L.n+' sahifa'}
 for(let pg=0;pg<L.n;pg++){
 const cv=drawPage(L,pg,1.5),w=document.createElement('div');w.className='pg';w.appendChild(cv);
 const cap=document.createElement('div');cap.className='cap';cap.innerHTML=`<span>${pg+1} / ${L.n}-sahifa</span>`;
@@ -639,6 +654,7 @@ if(pg===L.n-1){
  const pngBtn=document.createElement('button');pngBtn.className='g';pngBtn.textContent='PNG';pngBtn.title='Oxirgi sahifani PNG formatida saqlash';pngBtn.onclick=()=>saveImage(pg,'png');cap.appendChild(pngBtn);
  const jpgBtn=document.createElement('button');jpgBtn.className='g';jpgBtn.textContent='JPEG';jpgBtn.title='Oxirgi sahifani JPEG formatida saqlash';jpgBtn.onclick=()=>saveImage(pg,'jpeg');cap.appendChild(jpgBtn);
  const pdfBtn=document.createElement('button');pdfBtn.className='g';pdfBtn.textContent='PDF';pdfBtn.title='Barcha sahifalarni bitta PDF faylida saqlash';pdfBtn.onclick=()=>savePdf();cap.appendChild(pdfBtn);
+ const prBtn=document.createElement('button');prBtn.className='g';prBtn.textContent='Chop etish';prBtn.title='Barcha sahifalarni printerga yuborish';prBtn.onclick=()=>printPages();cap.appendChild(prBtn);
 }
 w.appendChild(cap);box.appendChild(w);
 if(pg%2==1)await new Promise(r=>setTimeout(r,0));if(my!==tok)return}}
@@ -662,9 +678,67 @@ const doc=new jspdf.jsPDF({unit:'px',format:[W,H],orientation:'portrait',hotfixe
 const printClean=$('printClean').checked;
 for(let k=0;k<pages.length;k++){const i=pages[k];say(`PDF tayyorlanmoqda: ${k+1} / ${pages.length}…`);await new Promise(r=>setTimeout(r,20));if(k)doc.addPage([W,H],'portrait');doc.addImage(drawPage(L,i,sc,printClean).toDataURL('image/jpeg',.98),'JPEG',0,0,W,H)}
 await dl.save({filename:pg===null?'qolyozma.pdf':`qolyozma-${pg+1}.pdf`,data:doc.output('blob')});say('PDF saqlandi ✓')
-}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'PDF saqlab boʻlmadi. 200 DPI ni sinab koʻring.')}}let t;function go(){clearTimeout(t);t=setTimeout(render,250)}
+}catch(e){say(e&&e.code==='declined'?'Bekor qilindi.':'PDF saqlab boʻlmadi. 200 DPI ni sinab koʻring.')}}let t;function go(){clearTimeout(t);t=setTimeout(()=>{render();saveState()},250)}
 [['th','v1'],['rough','v2'],['size','v3'],['ls','v4'],['jit','v5'],['margin','v6'],['pd','v7'],['mx','v8']].forEach(([a,b])=>$(a).addEventListener('input',()=>{$(b).textContent=$(a).value}));
 ['txt','font','realism','paper','page','fin','pen','th','rough','size','ls','jit','margin','pd','bw','mx'].forEach(i=>$(i).addEventListener('input',go));
+
+async function printPages(){
+ if(!L)return;if(window.QAndroid){say('Ilovada chop etish uchun avval PDF ni saqlab, keyin chop eting.');return}
+ try{say('Chop etishga tayyorlanmoqda…');const mm={a4:'210mm 297mm',a5:'148mm 210mm',letter:'8.5in 11in'}[L.o.page],imgs=[];
+  for(let i=0;i<L.n;i++){await new Promise(r=>setTimeout(r,20));imgs.push(drawPage(L,i,2.083,$('printClean').checked).toDataURL('image/jpeg',.95))}
+  const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);
+  const d=f.contentDocument;d.open();d.write('<!doctype html><meta charset="utf-8"><style>@page{size:'+mm+';margin:0}html,body{margin:0}img{display:block;width:100%;break-after:page}img:last-child{break-after:auto}</style>'+imgs.map(u=>'<img src="'+u+'">').join(''));d.close();
+  setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print();say('')}catch(e){say('Chop etish bu qurilmada ishlamadi. PDF yuklab olib chop eting.')}setTimeout(()=>f.remove(),120000)},500)
+ }catch(e){say('Chop etishga tayyorlab boʻlmadi. PDF yuklab oling.')}
+}
+/*TR-START*/
+const L2C={a:'а',b:'б',d:'д',e:'е',f:'ф',g:'г',h:'ҳ',i:'и',j:'ж',k:'к',l:'л',m:'м',n:'н',o:'о',p:'п',q:'қ',r:'р',s:'с',t:'т',u:'у',v:'в',x:'х',y:'й',z:'з',c:'ц'};
+function latToCyr(s){
+ s=s.replace(/[\u02bb\u02bc\u2018\u2019`´]/g,"'");let o='';const isL=c=>/[A-Za-z]/.test(c||'');
+ for(let i=0;i<s.length;i++){
+  const c=s[i],lo=c.toLowerCase(),nx=s[i+1]||'',n=nx.toLowerCase(),up=c!==lo&&isL(c);
+  const one=t=>{o+=up?t.toUpperCase():t};
+  if(lo==='o'&&n==="'"){one('ў');i++}
+  else if(lo==='g'&&n==="'"){one('ғ');i++}
+  else if(lo==='s'&&n==='h'){one('ш');i++}
+  else if(lo==='c'&&n==='h'){one('ч');i++}
+  else if(lo==='n'&&n==='g'){o+=up?(nx===nx.toUpperCase()?'НГ':'Нг'):'нг';i++}
+  else if(lo==='y'&&n==='o'&&s[i+2]!=="'"){one('ё');i++}
+  else if(lo==='y'&&n==='u'){one('ю');i++}
+  else if(lo==='y'&&n==='a'){one('я');i++}
+  else if(lo==='y'&&n==='e'){one('е');i++}
+  else if(lo==='e'){one(isL(s[i-1])?'е':'э')}
+  else if(c==="'"&&isL(s[i-1])&&isL(nx)){o+='ъ'}
+  else if(L2C[lo]&&isL(c)){one(L2C[lo])}
+  else o+=c}
+ return o}
+const C2L={а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'j',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'x',ц:'ts',ч:'ch',ш:'sh',щ:'sh',ъ:"'",ы:'i',ь:'',э:'e',ю:'yu',я:'ya',ў:"o'",қ:'q',ғ:"g'",ҳ:'h'};
+function cyrToLat(s){
+ const CY=/[А-ЯЁЎҚҒҲа-яёўқғҳ]/;
+ return s.replace(/[А-ЯЁЎҚҒҲа-яёўқғҳ]/g,(ch,off)=>{
+  const lo=ch.toLowerCase();let r=C2L[lo];if(r===undefined)return ch;
+  if(lo==='е'){const p=s[off-1];if(!p||!CY.test(p)||/[аеёиоуўэюяъь]/i.test(p))r='ye'}
+  if(ch!==lo){const nx=s[off+1];r=r.length>1?(nx&&CY.test(nx)&&nx===nx.toUpperCase()?r.toUpperCase():r[0].toUpperCase()+r.slice(1)):r.toUpperCase()}
+  return r})}
+/*TR-END*/
+$('toCyr').addEventListener('click',()=>{$('txt').value=latToCyr($('txt').value);go()});
+$('toLat').addEventListener('click',()=>{$('txt').value=cyrToLat($('txt').value);go()});
+$('reseed').addEventListener('click',()=>{SEED=(Math.random()*0x7fffffff)|0;go()});
+const STATE_KEY='qolyozma:v1',CTRL=['font','realism','paper','page','fin','pen','th','rough','size','ls','jit','margin','pd','mx','dpi'];
+function saveState(){try{const st={txt:$('txt').value,ink,ink2,seed:SEED,bw:$('bw').checked,pc:$('printClean').checked};CTRL.forEach(i=>st[i]=$(i).value);localStorage.setItem(STATE_KEY,JSON.stringify(st))}catch(e){}}
+function loadState(){try{const st=JSON.parse(localStorage.getItem(STATE_KEY)||'null');if(!st)return;
+ CTRL.forEach(i=>{const el=$(i);if(st[i]==null)return;const prev=el.value;el.value=st[i];if(el.value===''&&el.tagName==='SELECT')el.value=prev});
+ if(typeof st.txt==='string')$('txt').value=st.txt;
+ const ok=a=>Array.isArray(a)&&a.length===3&&a.every(v=>Number.isFinite(v));
+ if(ok(st.ink)){ink=st.ink;$('cp').value=hex(ink);[...$('inks').children].forEach(b=>b.classList.remove('on'))}
+ if(ok(st.ink2)){ink2=st.ink2;$('cp2').value=hex(ink2)}
+ if(Number.isFinite(st.seed))SEED=st.seed|0;
+ $('bw').checked=!!st.bw;$('printClean').checked=!!st.pc;
+ [['th','v1'],['rough','v2'],['size','v3'],['ls','v4'],['jit','v5'],['margin','v6'],['pd','v7'],['mx','v8']].forEach(([a,b])=>$(b).textContent=$(a).value);
+ renderFontGallery()}catch(e){}}
+$('clearText').addEventListener('click',()=>saveState());
+['bw','printClean'].forEach(i=>$(i).addEventListener('change',go));
+loadState();
 document.fonts&&document.fonts.ready.then(()=>{go();hero()});go();hero();
 </script>
 </body>

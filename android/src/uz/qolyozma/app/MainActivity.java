@@ -87,6 +87,10 @@ public class MainActivity extends Activity {
         String l = n.toLowerCase();
         if (l.endsWith(".pdf")) return "application/pdf";
         if (l.endsWith(".png")) return "image/png";
+        if (l.endsWith(".jpg") || l.endsWith(".jpeg")) return "image/jpeg";
+        if (l.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        if (l.endsWith(".xlsx")) return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        if (l.endsWith(".txt")) return "text/plain";
         return "application/octet-stream";
     }
 

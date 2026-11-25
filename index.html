@@ -542,7 +542,7 @@ if(!printClean&&pp==='dotted'){x.fillStyle='#b5c3cf';for(let a=lh;a<W;a+=lh/1.5)
 const ic=document.createElement('canvas');ic.width=cv.width;ic.height=cv.height;
 const y=ic.getContext('2d');y.scale(sc,sc);y.textBaseline='alphabetic';y.lineJoin='round';
 const R=rng((Date.now()^Math.floor(Math.random()*0x7fffffff)^(pg*7919))|0),j=o.jit,pro=o.realism==='pro',strength=pro?1:0,tw=o.th*P.t*1.6;
-let tVariantIndex=Math.floor(R()*5);const lastGlyphForm=new Map();let lastS=-1;
+let tVariantIndex=Math.floor(R()*5);const lastGlyphForm=new Map();let lastS=-1,lastZ=-1;
 lines.slice(pg*per,(pg+1)*per).forEach((ln,k)=>{
 const base=top+(k+1)*lh-Math.round(lh*.14),phase=R()*Math.PI*2,slope=(R()-.5)*j*(pro?12:7),wave=(R()-.5)*j*(pro?2.8:0);
 for(const it of ln.items){let cx=left+it.x+(pro?(R()-.5)*j*1.8:0);
@@ -562,12 +562,13 @@ if(apple){
  }else{form=Math.floor(R()*5)}
 }
 const forms=[{sx:.82,sy:1.12,slant:-.145,tilt:-.045},{sx:1.17,sy:.89,slant:.145,tilt:.048},{sx:.91,sy:.94,slant:.105,tilt:-.032},{sx:1.10,sy:1.13,slant:-.105,tilt:.038},{sx:.98,sy:1.02,slant:.018,tilt:-.052}];
+let zv=0;if(apple&&ch==='z'){do{zv=Math.floor(R()*5)}while(zv===lastZ);lastZ=zv}
 let sv=0;if(apple&&ch==='s'){do{sv=Math.floor(R()*S_VAR.length)}while(sv===lastS);lastS=sv}
 const shape=appleUpper
  ?(ch==='I'?{sx:.99+R()*.035,sy:.98+R()*.04,slant:-.225+(R()-.5)*.015,tilt:-.012+(R()-.5)*.018}
   :ch==='L'?{sx:.99+R()*.04,sy:.98+R()*.04,slant:-.135+(R()-.5)*.025,tilt:-.01+(R()-.5)*.018}
   :{sx:.96+R()*.08,sy:.97+R()*.06,slant:(R()-.5)*.075,tilt:(R()-.5)*.03})
- :(apple&&ch==='s'?{sx:S_VAR[sv].sx*(1+(R()-.5)*.03),sy:S_VAR[sv].sy*(1+(R()-.5)*.03),slant:S_VAR[sv].slant+(R()-.5)*.015,tilt:S_VAR[sv].tilt+(R()-.5)*.02}:(apple?forms[form]:{sx:1,sy:1,slant:0,tilt:0}));
+ :(apple&&ch==='z'&&zv<4?{sx:1+(R()-.5)*.06,sy:1+(R()-.5)*.06,slant:(R()-.5)*.05,tilt:(R()-.5)*.03}:(apple&&ch==='s'?{sx:S_VAR[sv].sx*(1+(R()-.5)*.03),sy:S_VAR[sv].sy*(1+(R()-.5)*.03),slant:S_VAR[sv].slant+(R()-.5)*.015,tilt:S_VAR[sv].tilt+(R()-.5)*.02}:(apple?forms[form]:{sx:1,sy:1,slant:0,tilt:0})));
 y.save();y.translate(cx+cw/2+jx-(apple&&ch==='I'?ln.fs*.11:0),base+yo+jy+(cx-left)/maxW*slope);y.rotate(rot+shape.tilt);y.scale(sz*shape.sx,sz*shape.sy);y.transform(1,0,shape.slant+(appleUpper&&ch!=='I'&&ch!=='L'?-.07:0),1,0,0);
 y.globalAlpha=pro?.91+R()*.09:1;
 y.fillStyle=y.strokeStyle=`rgb(${v},${v},${v})`;y.lineWidth=tw*(pro?.72+R()*.62:.85+R()*.3)+(ln.fs>o.size?.5:0);
@@ -612,6 +613,10 @@ y.bezierCurveTo(...K(-.05,-.30,.02,-.38,.10,-.43));y.quadraticCurveTo(...K(.15,-
 y.bezierCurveTo(...K(.195,-.30,.185,-.17,.165,-.09));y.bezierCurveTo(...K(.15,-.02,.08,.01,.04,-.01));
 if(R()<.5)y.bezierCurveTo(...K(-.03,-.05,-.05,-.08,-.075+R()*.02,-.12+R()*.02));else y.bezierCurveTo(...K(-.03,-.05,-.09,-.12,-.135,-.20));
 y.moveTo(...K(.15,-.08));y.bezierCurveTo(...K(.22,-.12,.28,-.16,.36,-.25));
+y.stroke();y.restore();
+}else if(apple&&ch==='z'&&zv<4){const m=ln.fs*.92,K=(...a)=>a.map(v=>(v+(R()-.5)*.02)*m);
+y.save();y.lineCap='round';y.lineJoin='round';y.lineWidth=Math.max(m*.09,y.lineWidth*1.15);y.beginPath();
+if(zv===0){y.moveTo(...K(-.17,-.4));y.quadraticCurveTo(...K(0,-.45,.17,-.41));y.bezierCurveTo(...K(.08,-.3,-.06,-.14,-.17,-.03));y.quadraticCurveTo(...K(-.06,.02,.1,-.03));y.quadraticCurveTo(...K(.2,-.07,.24,-.16));}else if(zv===1){y.moveTo(...K(-.23,-.3));y.quadraticCurveTo(...K(-.21,-.4,-.12,-.41));y.quadraticCurveTo(...K(.02,-.44,.17,-.4));y.bezierCurveTo(...K(.1,-.28,-.08,-.12,-.18,-.04));y.bezierCurveTo(...K(-.08,.03,.06,.02,.16,-.04));y.quadraticCurveTo(...K(.2,-.07,.22,-.12));}else if(zv===2){y.moveTo(...K(-.16,-.38));y.quadraticCurveTo(...K(-.02,-.45,.15,-.38));y.bezierCurveTo(...K(.12,-.3,-.12,-.18,-.15,-.08));y.bezierCurveTo(...K(-.17,.01,0,.04,.14,-.05));y.quadraticCurveTo(...K(.2,-.09,.22,-.15));}else if(zv===3){y.moveTo(...K(-.19,-.34));y.quadraticCurveTo(...K(-.15,-.41,-.08,-.42));y.quadraticCurveTo(...K(.05,-.43,.16,-.42));y.bezierCurveTo(...K(.09,-.27,-.07,-.13,-.16,-.04));y.quadraticCurveTo(...K(-.04,.01,.1,-.02));y.quadraticCurveTo(...K(.19,-.04,.22,-.1));}
 y.stroke();y.restore();
 }else{y.fillText(ch,-cw/2,0);if(y.lineWidth>.05)y.strokeText(ch,-cw/2,0);}
 y.restore();

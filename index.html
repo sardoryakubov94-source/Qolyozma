@@ -610,7 +610,7 @@ y.save();y.lineCap='round';y.lineJoin='round';y.lineWidth=Math.max(m*.095,y.line
 y.moveTo(...K(-.25,-.23));y.quadraticCurveTo(...K(-.19,-.235,-.13,-.215));
 y.bezierCurveTo(...K(-.05,-.30,.02,-.38,.10,-.43));y.quadraticCurveTo(...K(.15,-.47,.185,-.40));
 y.bezierCurveTo(...K(.195,-.30,.185,-.17,.165,-.09));y.bezierCurveTo(...K(.15,-.02,.08,.01,.04,-.01));
-y.bezierCurveTo(...K(-.03,-.05,-.09,-.12,-.135,-.20));
+if(R()<.5)y.bezierCurveTo(...K(-.03,-.05,-.05,-.08,-.075+R()*.02,-.12+R()*.02));else y.bezierCurveTo(...K(-.03,-.05,-.09,-.12,-.135,-.20));
 y.moveTo(...K(.15,-.08));y.bezierCurveTo(...K(.22,-.12,.28,-.16,.36,-.25));
 y.stroke();y.restore();
 }else{y.fillText(ch,-cw/2,0);if(y.lineWidth>.05)y.strokeText(ch,-cw/2,0);}
